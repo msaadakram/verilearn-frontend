@@ -24,9 +24,22 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
+## Deploying to Vercel
+
+1. Ensure the repository is pushed to GitHub (already done).
+2. Add environment variables in the Vercel Project Settings (example keys):
+	- NEXT_PUBLIC_API_URL (your backend URL, e.g. https://verilearn-backend.vercel.app)
+	- Any Firebase/Supabase/Agora public keys your app needs
+3. From the project folder you can deploy with the Vercel CLI:
+
+```bash
+npm install -g vercel
+vercel login
+vercel --prod
+```
+
+Vercel will auto-detect Next.js and run `npm run build`. If you need custom routes or rewrites, edit `vercel.json`.
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
 ## Deploy on Vercel
