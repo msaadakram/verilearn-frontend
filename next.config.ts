@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  turbopack: {
+    // Ensure module/CSS resolution stays scoped to the frontend app directory.
+    root: process.cwd(),
+  },
 };
 
 export default nextConfig;
