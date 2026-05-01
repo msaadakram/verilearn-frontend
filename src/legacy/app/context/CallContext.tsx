@@ -33,6 +33,7 @@ import {
     RemoteUser,
 } from '../services/agora';
 import { AUTH_SESSION_CHANGED_EVENT, getStoredAuthSession, getStoredAuthUser, updateStoredAuthUser } from '../services/auth';
+import { getApiBaseUrl } from '../config/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -105,8 +106,7 @@ const CallContext = createContext<CallContextType | undefined>(undefined);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const API_BASE =
-    process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+const API_BASE = getApiBaseUrl();
 
 const AGORA_APP_ID = process.env.NEXT_PUBLIC_AGORA_APP_ID || '';
 

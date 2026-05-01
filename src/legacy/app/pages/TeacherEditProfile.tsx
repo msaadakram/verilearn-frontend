@@ -16,6 +16,7 @@ import {
   type TeacherProfilePackage,
 } from '../services/auth';
 import { syncAvatarToFirebase } from '../services/firebase';
+import { getApiBaseUrl } from '../config/api';
 
 /* ── Constants ──────────────────────────────── */
 const ALL_SUBJECTS = [
@@ -192,7 +193,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 const inputCls = "w-full px-4 py-3 rounded-xl border text-sm outline-none transition-all focus:ring-2";
 const inputStyle = { borderColor: 'rgba(122,184,186,0.3)', background: '#f9fafb', caretColor: '#7ab8ba' };
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = getApiBaseUrl();
 
 function hasNonEmptyText(value: string) {
   return value.trim().length > 0;
