@@ -317,6 +317,17 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
 
             socketRef.current = socket;
 
+            // ── Debug: socket lifecycle ────────────────────────────────────────
+            socket.on('connect', () => {
+                console.log(`[Socket] Connected successfully. id=${socket?.id}, activeMode=${activeMode}, userId=${user?.id}`);
+            });
+            socket.on('connect_error', (err: Error) => {
+                console.error('[Socket] Connection error:', err.message);
+            });
+            socket.on('disconnect', (reason: string) => {
+                console.warn('[Socket] Disconnected:', reason);
+            });
+
             // ── Teacher receives incoming call ────────────────────────────────────
             socket.on('incoming-call', (data: IncomingCallData) => {
                 console.log('[Call] Incoming call from:', data.callerName);
@@ -497,12 +508,15 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         setOtherUserId(teacherId);
         setCallStatus('calling');
 
-        socket.emit('call-user', {
+        const payload = {
             teacherId,
             studentId: user.id,
             callerName: user.name,
             callerAvatar: user.avatarUrl ?? '',
-        });
+        };
+        console.log('[Call] Initiating call with payload:', JSON.stringify(payload));
+        console.log('[Call] Socket connected?', socket.connected, 'Socket ID:', socket.id);
+        socket.emit('call-user', payload);
     }, []);
 
     /** Join a scheduled session directly (for both student and teacher) */
