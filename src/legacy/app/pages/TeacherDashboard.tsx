@@ -29,7 +29,7 @@ import {
   type TeacherOnboardingState,
 } from '../services/auth';
 import {
-  getMyBookings, acceptBooking as apiAcceptBooking, declineBooking as apiDeclineBooking,
+  getMyBookings, acceptBooking as apiAcceptBooking, declineBooking as apiDeclineBooking, cancelBooking as apiCancelBooking,
   type Booking,
   type BookingParticipant,
 } from '../services/booking';
@@ -252,6 +252,16 @@ export function TeacherDashboard() {
     try {
       await apiDeclineBooking(id);
       setBookingRequests((prev) => prev.map((b) => b._id === id ? { ...b, status: 'declined' } : b));
+    } catch {/* show nothing */ } finally {
+      setBookingActionId(null);
+    }
+  };
+
+  const cancelBooking = async (id: string) => {
+    setBookingActionId(id);
+    try {
+      await apiCancelBooking(id);
+      setBookingRequests((prev) => prev.map((b) => b._id === id ? { ...b, status: 'cancelled' } : b));
     } catch {/* show nothing */ } finally {
       setBookingActionId(null);
     }
@@ -910,7 +920,16 @@ export function TeacherDashboard() {
                             </>
                           )}
                           {isAccepted && (
-                            <SessionJoinButton booking={req} />
+                            <>
+                              <SessionJoinButton booking={req} />
+                              <button type="button" onClick={() => { void cancelBooking(req._id); }}
+                                disabled={isLoading}
+                                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm border hover:bg-gray-50 transition-colors disabled:opacity-50"
+                                style={{ border: '1px solid rgba(0,0,0,0.08)', background: 'white' }}>
+                                {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <X className="w-3.5 h-3.5 text-red-500" />}
+                                Cancel
+                              </button>
+                            </>
                           )}
                           {isDeclined && (
                             <span className="text-xs text-red-500">Declined</span>
