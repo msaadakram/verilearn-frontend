@@ -62,7 +62,7 @@ export function CnicProvider({ children }: { children: ReactNode }) {
   const refreshAllSubmissions = useCallback(async () => {
     const user = getStoredAuthUser();
     // Only admins have access to the full submissions list
-    if (!authed || !(user as any)?.isAdmin) return;
+    if (!authed || user?.isAdmin !== true) return;
     setLoadingAll(true);
     try {
       const { submissions } = await getAllSubmissions(1, 100);

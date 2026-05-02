@@ -257,7 +257,7 @@ export function Features() {
               transition={{ delay: 0.2 }}
               style={{ color: '#6b7280' }}
             >
-              From signup to your first session — it's that simple.
+              From signup to your first session — it&apos;s that simple.
             </motion.p>
           </div>
 

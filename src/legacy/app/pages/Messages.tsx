@@ -9,6 +9,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
+import type { LucideIcon } from 'lucide-react';
 import {
   ArrowLeft,
   Send,
@@ -185,7 +186,7 @@ function SidebarItem({
 
 // ─── Section header ───────────────────────────────────────────────────────────
 
-function SectionHeader({ icon: Icon, label, count }: { icon: any; label: string; count?: number }) {
+function SectionHeader({ icon: Icon, label, count }: { icon: LucideIcon; label: string; count?: number }) {
   return (
     <div className="flex items-center gap-2 px-4 py-2 mt-1">
       <Icon className="w-3.5 h-3.5" style={{ color: '#7ab8ba' }} />
@@ -205,7 +206,7 @@ export function Messages() {
   const currentUser = getStoredAuthUser();
   const myUid = currentUser?.id || '';
   const myName = currentUser?.name || 'User';
-  const myAvatar = (currentUser as any)?.avatarUrl || '';
+  const myAvatar = currentUser?.avatarUrl || '';
   const myRole = currentUser?.profession || 'student';
   const roleLabel = (myRole as string) === 'teacher' ? 'Teacher' : (myRole as string) === 'both' ? 'Student & Teacher' : 'Student';
 
@@ -358,7 +359,7 @@ export function Messages() {
   const handleSend = async () => {
     if (!input.trim() || sending) return;
 
-    let conv = activeConversation;
+    const conv = activeConversation;
     const targetUid = partnerUid || contactId;
 
     // Create conversation if sending for the first time
@@ -773,7 +774,7 @@ export function Messages() {
                 </div>
                 <h3 className="text-[var(--foreground)] mb-2">Send a message to anyone</h3>
                 <p className="text-[var(--muted-foreground)] text-sm max-w-xs mb-5">
-                  Students, teachers, everyone — they'll receive your message even if offline.
+                  Students, teachers, everyone — they&apos;ll receive your message even if offline.
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.04 }}

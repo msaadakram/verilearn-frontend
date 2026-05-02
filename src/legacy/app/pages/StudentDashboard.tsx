@@ -384,7 +384,7 @@ export function StudentDashboard() {
                 <div className="relative w-16 h-16 rounded-full p-0.5"
                   style={{ background: 'conic-gradient(from 0deg, #7ab8ba, #8b5cf6, #7ab8ba)' }}>
                   <ImageWithFallback
-                    src={(currentUser as any)?.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
+                    src={currentUser?.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
                     alt={userName}
                     className="w-full h-full rounded-full object-cover border-2 border-[#1a2332]"
                   />

@@ -31,6 +31,7 @@ import {
 import {
   getMyBookings, acceptBooking as apiAcceptBooking, declineBooking as apiDeclineBooking,
   type Booking,
+  type BookingParticipant,
 } from '../services/booking';
 import { Button } from '../components/ui/button';
 
@@ -39,6 +40,11 @@ const BOOKINGS_PER_PAGE = 10;
 /* ── Types ─────────────────────────────────── */
 type BadgeStatus = 'Not Verified' | 'Verified' | 'Expert';
 type Difficulty = 'Low' | 'Medium' | 'High';
+type BookingStudentParticipant = BookingParticipant & {
+  studentProfile?: {
+    avatarUrl?: string;
+  };
+};
 
 /* ── Mock data ─────────────────────────────── */
 const TUTOR = {
@@ -832,7 +838,9 @@ export function TeacherDashboard() {
                 <div className="p-4 rounded-2xl bg-white border text-sm text-[var(--muted-foreground)]">No booking requests yet.</div>
               )}
               {pagedBookingRequests.map((req) => {
-                const studentObj = typeof req.studentId === 'object' && req.studentId !== null ? req.studentId as any : null;
+                const studentObj: BookingStudentParticipant | null = typeof req.studentId === 'object' && req.studentId !== null
+                  ? req.studentId
+                  : null;
                 const studentName = studentObj?.name || 'Student';
                 const studentAvatar = studentObj?.avatarUrl || studentObj?.studentProfile?.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100';
                 const isPending = req.status === 'pending';
@@ -871,12 +879,12 @@ export function TeacherDashboard() {
                           </div>
                         )}
                         {/* Session info: duration + credits */}
-                        {(req as any).sessionDuration && (
+                        {req.sessionDuration && (
                           <div className="flex items-center gap-2 mb-2 text-xs text-[var(--muted-foreground)]">
-                            <Timer className="w-3 h-3" /> {(req as any).sessionDuration} min session
-                            {req.status === 'completed' && (req as any).creditsUsed > 0 && (
+                            <Timer className="w-3 h-3" /> {req.sessionDuration} min session
+                            {req.status === 'completed' && req.creditsUsed > 0 && (
                               <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md" style={{ background: 'rgba(245,158,11,0.08)', color: '#d97706' }}>
-                                <Coins className="w-3 h-3" /> {(req as any).creditsUsed} cr earned
+                                <Coins className="w-3 h-3" /> {req.creditsUsed} cr earned
                               </span>
                             )}
                           </div>

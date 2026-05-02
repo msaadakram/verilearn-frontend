@@ -133,7 +133,7 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
       text: text.trim(),
       senderId: myUid,
       senderName: user?.name || 'User',
-      senderAvatar: (user as any)?.avatarUrl || '',
+      senderAvatar: user?.avatarUrl || '',
       receiverId,
       createdAt: Date.now(),
     });
@@ -185,7 +185,7 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
     void registerUserInFirebase(
       myUid,
       user?.name || 'User',
-      (user as any)?.avatarUrl || '',
+      user?.avatarUrl || '',
       user?.profession || 'student',
     );
     cleanupPresenceRef.current = setPresenceOnline(myUid);

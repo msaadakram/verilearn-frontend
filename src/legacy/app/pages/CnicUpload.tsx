@@ -11,6 +11,7 @@ import { useCnic } from '../context/CnicContext';
 import {
   isCnicApiError,
   verifyCnicImage,
+  type CnicSubmissionRecord,
   type CnicVerificationResponse,
 } from '../services/cnic';
 import { getStoredAuthUser } from '../services/auth';
@@ -326,7 +327,7 @@ export function CnicUpload() {
           </motion.div>
           <h1 className="text-[var(--foreground)] mb-3" style={{ fontSize: '1.75rem' }}>Submitted Successfully!</h1>
           <p className="text-[var(--muted-foreground)] mb-8 leading-relaxed">
-            Your CNIC has been submitted for review. Our team will verify your identity within <strong>1–2 business days</strong>. You'll be notified once the review is complete.
+            Your CNIC has been submitted for review. Our team will verify your identity within <strong>1–2 business days</strong>. You&apos;ll be notified once the review is complete.
           </p>
           <div className="p-5 rounded-2xl mb-8 text-left space-y-3"
             style={{ background: 'rgba(122,184,186,0.08)', border: '1px solid rgba(122,184,186,0.25)' }}>
@@ -362,7 +363,7 @@ export function CnicUpload() {
   }
 
   /* ── If already submitted/verified — show status screen ── */
-  if (cnicStatus === 'Pending' || cnicStatus === 'Verified') {
+  if ((cnicStatus === 'Pending' || cnicStatus === 'Verified') && mySubmission) {
     return <AlreadySubmitted status={cnicStatus} submission={mySubmission} />;
   }
 
@@ -676,7 +677,7 @@ function InfoTip({ text }: { text: string }) {
   );
 }
 
-function AlreadySubmitted({ status, submission }: { status: string; submission: any }) {
+function AlreadySubmitted({ status, submission }: { status: string; submission: CnicSubmissionRecord }) {
   const isVerified = status === 'Verified';
   const color = isVerified ? '#10b981' : '#f59e0b';
   const Icon = isVerified ? CheckCircle2 : AlertCircle;
@@ -697,7 +698,7 @@ function AlreadySubmitted({ status, submission }: { status: string; submission: 
         <p className="text-[var(--muted-foreground)] mb-6 leading-relaxed">
           {isVerified
             ? 'Your CNIC has been verified. Your Verified Tutor badge is now active on your profile.'
-            : 'Your CNIC is currently under review. You\'ll be notified once the process is complete (usually 1–2 business days).'}
+            : 'Your CNIC is currently under review. You will be notified once the process is complete (usually 1-2 business days).'}
         </p>
         {submission && (
           <div className="p-5 rounded-2xl mb-6 text-left space-y-3"

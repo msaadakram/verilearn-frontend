@@ -42,6 +42,7 @@ export interface AuthUser {
   profession: Profession;
   avatarUrl?: string;
   learningCredits?: number;
+  isAdmin?: boolean;
   isEmailVerified?: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -278,12 +279,6 @@ import { getApiBaseUrl } from '../config/api';
 
 const API_BASE_URL = getApiBaseUrl();
 
-function debugAuthLog(hypothesisId: string, location: string, message: string, data: Record<string, unknown>) {
-  // #region agent log
-  fetch('http://127.0.0.1:7840/ingest/308c3be9-68ac-4451-a0ea-ae9b1522c0d9',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'4fe5b1'},body:JSON.stringify({sessionId:'4fe5b1',runId:'signup-debug-1',hypothesisId,location,message,data,timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
-}
-
 const AUTH_STORAGE_KEYS = {
   token: 'verilearn_auth_token',
   user: 'verilearn_auth_user',
@@ -345,6 +340,7 @@ function parseStoredUser(rawUser: string | null): AuthUser | null {
       profession: parsed.profession,
       avatarUrl: typeof parsed.avatarUrl === 'string' ? parsed.avatarUrl : undefined,
       learningCredits: typeof parsed.learningCredits === 'number' ? parsed.learningCredits : undefined,
+      isAdmin: parsed.isAdmin === true,
       isEmailVerified: parsed.isEmailVerified,
       createdAt: parsed.createdAt,
       updatedAt: parsed.updatedAt,
@@ -427,13 +423,6 @@ function parseStoredUser(rawUser: string | null): AuthUser | null {
 
 async function request<T>(endpoint: string, init: RequestInit): Promise<T> {
   const requestUrl = `${API_BASE_URL}${endpoint}`;
-  debugAuthLog('H2', 'services/auth.ts:request:before-fetch', 'About to call backend API', {
-    endpoint,
-    requestUrl,
-    method: init.method || 'GET',
-    online: typeof navigator !== 'undefined' ? navigator.onLine : 'unknown',
-    pageOrigin: typeof window !== 'undefined' ? window.location.origin : 'server',
-  });
 
   let response: Response;
   try {
@@ -444,25 +433,9 @@ async function request<T>(endpoint: string, init: RequestInit): Promise<T> {
         ...(init.headers || {}),
       },
     });
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    debugAuthLog('H3', 'services/auth.ts:request:fetch-error', 'Fetch threw before response was received', {
-      endpoint,
-      requestUrl,
-      errorMessage,
-      errorType: error instanceof Error ? error.name : typeof error,
-      pageProtocol: typeof window !== 'undefined' ? window.location.protocol : 'server',
-    });
-    throw error;
+  } catch {
+    throw new Error('Unable to reach the server. Please check your connection and try again.');
   }
-
-  debugAuthLog('H4', 'services/auth.ts:request:after-fetch', 'Received HTTP response from backend', {
-    endpoint,
-    requestUrl,
-    status: response.status,
-    ok: response.ok,
-    responseType: response.type,
-  });
 
   const payload = (await response.json().catch(() => null)) as (T & AuthErrorPayload) | null;
 
@@ -472,13 +445,6 @@ async function request<T>(endpoint: string, init: RequestInit): Promise<T> {
   }
 
   if (!payload) {
-    debugAuthLog('H10', 'services/auth.ts:request:empty-success-payload', 'Response was ok but JSON payload was empty/unparseable', {
-      endpoint,
-      requestUrl,
-      status: response.status,
-      statusText: response.statusText,
-      responseType: response.type,
-    });
     throw new Error('Unexpected empty response from server.');
   }
 

@@ -40,8 +40,8 @@ export function About() {
                 Reimagining education for a connected world
               </h1>
               <p className="text-[var(--muted-foreground)] text-lg leading-relaxed">
-                Founded in 2023, Verilearn was born from a simple idea: that the right tutor can transform a student's
-                relationship with learning. We're building the bridge between passionate learners and expert educators.
+                Founded in 2023, Verilearn was born from a simple idea: that the right tutor can transform a student&apos;s
+                relationship with learning. We&apos;re building the bridge between passionate learners and expert educators.
               </p>
             </div>
             <div className="rounded-2xl overflow-hidden shadow-lg">
@@ -82,7 +82,7 @@ export function About() {
               <h2 className="text-3xl text-[var(--navy-900)] mb-6">Our Story</h2>
               <p className="text-[var(--muted-foreground)] leading-relaxed mb-4">
                 Verilearn started when our founders, both lifelong learners, realized that finding the right tutor was
-                needlessly difficult. Great teachers existed everywhere, but students couldn't find them.
+                needlessly difficult. Great teachers existed everywhere, but students couldn&apos;t find them.
               </p>
               <p className="text-[var(--muted-foreground)] leading-relaxed mb-4">
                 We built a platform that uses smart matching to pair students with tutors who fit their learning style,
@@ -90,7 +90,7 @@ export function About() {
               </p>
               <p className="text-[var(--muted-foreground)] leading-relaxed">
                 Today, Verilearn serves students in over 120 countries, facilitating thousands of learning sessions every day.
-                But we're just getting started.
+                But we&apos;re just getting started.
               </p>
             </div>
           </div>

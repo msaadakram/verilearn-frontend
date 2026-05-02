@@ -196,7 +196,7 @@ export function CourseDetail() {
 
               {/* What You'll Learn */}
               <div className="bg-white rounded-2xl p-8 shadow-sm">
-                <h2 className="text-2xl text-[var(--navy-900)] mb-6">What you'll learn</h2>
+                <h2 className="text-2xl text-[var(--navy-900)] mb-6">What you&apos;ll learn</h2>
                 <div className="grid sm:grid-cols-2 gap-3">
                   {course.whatYouLearn.map((item, i) => (
                     <div key={i} className="flex gap-3 items-start">

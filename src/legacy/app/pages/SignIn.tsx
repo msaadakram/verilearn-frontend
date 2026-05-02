@@ -206,7 +206,7 @@ export function SignIn() {
           </div>
 
           <div className="mt-6 text-center text-sm text-[var(--muted-foreground)]">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link
               to="/signup"
               className="text-[var(--teal-400)] hover:text-[var(--teal-500)] transition-colors"

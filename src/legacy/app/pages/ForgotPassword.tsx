@@ -184,7 +184,7 @@ export function ForgotPassword() {
                 Reset password
               </h1>
               <p className="text-[var(--muted-foreground)] mb-8">
-                Enter your email and we'll send you a verification code
+                Enter your email and we&apos;ll send you a verification code
               </p>
 
               <form onSubmit={handleEmailSubmit} className="space-y-4">
@@ -265,7 +265,7 @@ export function ForgotPassword() {
 
               <div className="mt-6 space-y-3">
                 <p className="text-sm text-[var(--muted-foreground)]">
-                  Didn't receive the code?
+                  Didn&apos;t receive the code?
                 </p>
                 <button
                   type="button"

@@ -146,7 +146,7 @@ export function Help() {
           <div className="max-w-3xl mx-auto">
             {searchQuery.trim() && (
               <p className="text-[var(--muted-foreground)] mb-6">
-                {filteredFaqs.length} result{filteredFaqs.length !== 1 ? 's' : ''} for "{searchQuery}"
+                {filteredFaqs.length} result{filteredFaqs.length !== 1 ? 's' : ''} for &quot;{searchQuery}&quot;
               </p>
             )}
             <div className="space-y-3">

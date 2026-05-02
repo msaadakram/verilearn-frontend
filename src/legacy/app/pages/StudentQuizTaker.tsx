@@ -48,6 +48,10 @@ function mapTeacherForQuiz(teacher: StudentTeacherDirectoryItem): QuizTeacher {
   };
 }
 
+function getTimestampMs() {
+  return Date.now();
+}
+
 /* ── Timer ring ─────────────────────────────── */
 function TimerRing({ timeLeft, total, color }: { timeLeft: number; total: number; color: string }) {
   const r = 26;
@@ -176,14 +180,19 @@ export function StudentQuizTaker() {
   const [selected, setSelected]      = useState<number | null>(null);
   const [revealed, setRevealed]      = useState(false);
   const [timeLeft, setTimeLeft]      = useState(0);
-  const [startTime]                  = useState(Date.now());
+  const [startTime]                  = useState(getTimestampMs);
   const timerRef                     = useRef<ReturnType<typeof setInterval> | null>(null);
 
   /* ── Results ── */
-  const [result, setResult]          = useState<{ score: number; correct: number; badge: BadgeTier | null } | null>(null);
+  const [result, setResult]          = useState<{ score: number; correct: number; badge: BadgeTier | null; timeTakenSeconds: number } | null>(null);
 
   const questions: QuizQuestion[] = quiz?.questions ?? [];
   const currentQ = questions[currentIdx];
+
+  function handleReveal(idx: number) {
+    setSelected(idx);
+    setRevealed(true);
+  }
 
   /* ── Timer ── */
   useEffect(() => {
@@ -210,11 +219,6 @@ export function StudentQuizTaker() {
     handleReveal(idx);
   };
 
-  const handleReveal = (idx: number) => {
-    setSelected(idx);
-    setRevealed(true);
-  };
-
   const handleNext = () => {
     const ans = [...answers, selected ?? -1];
     setAnswers(ans);
@@ -231,6 +235,7 @@ export function StudentQuizTaker() {
     const correct = ans.filter((a, i) => a === questions[i].correctIndex).length;
     const score   = Math.round((correct / questions.length) * 100);
     const badge   = getBadgeForScore(score);
+    const timeTakenSeconds = Math.round((Date.now() - startTime) / 1000);
     const r = {
       quizId: quiz!.id,
       teacherId: quiz!.teacherId,
@@ -240,12 +245,12 @@ export function StudentQuizTaker() {
       correctCount: correct,
       totalCount: questions.length,
       badge,
-      timeTaken: Math.round((Date.now() - startTime) / 1000),
+      timeTaken: timeTakenSeconds,
       completedAt: new Date().toISOString(),
       answers: ans,
     };
     saveResult(r);
-    setResult({ score, correct, badge });
+    setResult({ score, correct, badge, timeTakenSeconds });
     setPhase('results');
   };
 
@@ -298,7 +303,7 @@ export function StudentQuizTaker() {
               <Link to={`/student-dashboard/tutors/${teacher.id}`}
                 className="inline-flex items-center gap-2 text-sm mb-6 hover:opacity-70 transition-opacity"
                 style={{ color: '#6b7280' }}>
-                <ArrowLeft className="w-4 h-4" /> Back to {teacher.name.split(' ')[0]}'s profile
+                <ArrowLeft className="w-4 h-4" /> Back to {teacher.name.split(' ')[0]}&apos;s profile
               </Link>
 
               {/* Quiz card */}
@@ -566,8 +571,8 @@ export function StudentQuizTaker() {
                   <div className="grid grid-cols-3 gap-3 mb-6">
                     {[
                       { icon: <CheckCircle2 className="w-4 h-4" />, value: result.correct, label: 'Correct', color: '#10b981' },
-                      { icon: <XCircle className="w-4 h-4" />,      value: result.correct !== result.correct ? result.correct : questions.length - result.correct, label: 'Incorrect', color: '#ef4444' },
-                      { icon: <Clock className="w-4 h-4" />,         value: `${Math.floor((Date.now() - (Date.now() - (getResultForQuiz(quiz.id)?.timeTaken ?? 0) * 1000)) / 60000) || Math.floor((getResultForQuiz(quiz.id)?.timeTaken ?? 0) / 60)}m`, label: 'Time', color: tColor },
+                      { icon: <XCircle className="w-4 h-4" />,      value: questions.length - result.correct, label: 'Incorrect', color: '#ef4444' },
+                      { icon: <Clock className="w-4 h-4" />,         value: `${Math.floor(result.timeTakenSeconds / 60)}m`, label: 'Time', color: tColor },
                     ].map(({ icon, value, label, color }) => (
                       <div key={label} className="text-center p-4 rounded-2xl"
                         style={{ background: `${color}08`, border: `1px solid ${color}20` }}>

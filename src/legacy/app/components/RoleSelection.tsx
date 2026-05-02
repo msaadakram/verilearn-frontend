@@ -212,7 +212,7 @@ export function RoleSelection() {
             style={{ color: '#6b7280', fontSize: '1.125rem' }}
             className="max-w-xl mx-auto"
           >
-            Whether you're here to learn or teach, we've built the perfect platform for you.
+            Whether you&apos;re here to learn or teach, we&apos;ve built the perfect platform for you.
           </motion.p>
         </div>
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Mail, Lock, User, Eye, EyeOff, GraduationCap, Users } from 'lucide-react';
 import { Button } from './Button';
@@ -11,10 +11,6 @@ interface AuthModalProps {
 
 export function AuthModal({ open, onOpenChange, defaultView = 'signin' }: AuthModalProps) {
   const [view, setView] = useState<'signin' | 'signup' | 'forgot'>(defaultView);
-
-  useEffect(() => {
-    setView(defaultView);
-  }, [defaultView]);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -26,7 +22,6 @@ export function AuthModal({ open, onOpenChange, defaultView = 'signin' }: AuthMo
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', view, formData);
     onOpenChange(false);
   };
 
@@ -298,7 +293,7 @@ export function AuthModal({ open, onOpenChange, defaultView = 'signin' }: AuthMo
                 <div className="mt-6 text-center text-sm text-[var(--muted-foreground)]">
                   {view === 'signin' ? (
                     <>
-                      Don't have an account?{' '}
+                      Don&apos;t have an account?{' '}
                       <button
                         type="button"
                         onClick={() => setView('signup')}

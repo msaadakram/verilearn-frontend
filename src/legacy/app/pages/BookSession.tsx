@@ -42,6 +42,11 @@ function formatTime24to12(time24: string | undefined | null) {
     return `${h12}:${m.toString().padStart(2, '0')} ${suffix}`;
 }
 
+function isPastSlot(date: string, slot: string) {
+    return date === getTodayStr()
+        && new Date(`${date}T${slot}:00`).getTime() <= Date.now();
+}
+
 /* ── Animation variants ─────────────────────────────────────── */
 const slotVariants = {
     hidden: { opacity: 0, y: 12, scale: 0.95 },
@@ -237,7 +242,7 @@ export function BookSession() {
     }
 
     /* ── Credit balance bar component ── */
-    const CreditBar = () => (
+    const renderCreditBar = () => (
         <motion.div
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.02 }}
@@ -282,7 +287,7 @@ export function BookSession() {
     );
 
     /* ── Duration selector component ── */
-    const DurationSelector = () => (
+    const renderDurationSelector = () => (
         <motion.div
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
             className="bg-white/90 backdrop-blur-xl rounded-2xl p-6 border shadow-sm mb-6"
@@ -360,10 +365,10 @@ export function BookSession() {
                 </motion.div>
 
                 {/* Credit balance */}
-                <CreditBar />
+                {renderCreditBar()}
 
                 {/* Duration selector */}
-                <DurationSelector />
+                {renderDurationSelector()}
 
                 {/* ── Mode toggle ── */}
                 <motion.div
@@ -468,8 +473,7 @@ export function BookSession() {
                                         <AnimatePresence mode="popLayout">
                                             {slots.map((slot) => {
                                                 const isSelected = slot === selectedTime;
-                                                const isPast = selectedDate === new Date().toISOString().split('T')[0]
-                                                    && new Date(`${selectedDate}T${slot}:00`).getTime() <= Date.now();
+                                                const isPast = isPastSlot(selectedDate, slot);
                                                 return (
                                                     <motion.button key={slot}
                                                         variants={slotVariants}
