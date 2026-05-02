@@ -23,6 +23,7 @@ import {
   Mic,
   X,
   MessageSquare,
+  Users,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import {
@@ -674,7 +675,7 @@ export function Messages() {
                 <motion.button
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.97 }}
-                  onClick={() => setSidebarTab('people')}
+                  onClick={() => setShowSidebar(true)}
                   className="px-5 py-2.5 rounded-xl text-white text-sm flex items-center gap-2 mx-auto"
                   style={{ background: 'linear-gradient(135deg, #7ab8ba, #5a9fa1)' }}
                 >
