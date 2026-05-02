@@ -58,7 +58,8 @@ export function IncomingCallModal() {
                 </div>
 
                 <h2 style={styles.name}>{incomingCall.callerName}</h2>
-                <p style={styles.subtext}>Incoming video call…</p>
+                <p style={styles.subtext}>Student is calling you</p>
+                <p style={styles.subtextSecondary}>Please answer or decline the call</p>
                 <p style={styles.countdown}>Auto-reject in {countdown}s</p>
 
                 <div style={styles.buttonRow}>
@@ -165,6 +166,11 @@ const styles: Record<string, React.CSSProperties> = {
     subtext: {
         color: 'rgba(255,255,255,0.6)',
         fontSize: 14,
+        margin: '0 0 4px',
+    },
+    subtextSecondary: {
+        color: 'rgba(255,255,255,0.45)',
+        fontSize: 12,
         margin: '0 0 4px',
     },
     countdown: {

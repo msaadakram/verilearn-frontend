@@ -154,6 +154,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     const socketRef = useRef<Socket | null>(null);
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const incomingAutoRejectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const ringingStopTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const ringingAudioRef = useRef<HTMLAudioElement | null>(null);
     const activeBookingIdRef = useRef<string | null>(null);
 
@@ -184,13 +185,20 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
 
     const playRingingSound = useCallback(() => {
         try {
+            if (ringingStopTimeoutRef.current) {
+                clearTimeout(ringingStopTimeoutRef.current);
+                ringingStopTimeoutRef.current = null;
+            }
+
             if (!ringingAudioRef.current) {
                 const audio = new Audio('/whatsapp_ringtone.mp3');
                 audio.loop = true;
+                audio.preload = 'auto';
                 audio.volume = 0.8;
                 ringingAudioRef.current = audio;
             }
 
+            ringingAudioRef.current.currentTime = 0;
             const playPromise = ringingAudioRef.current.play();
             if (playPromise !== undefined) {
                 playPromise.catch((err) => {
@@ -198,7 +206,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
                 });
             }
 
-            setTimeout(() => {
+            ringingStopTimeoutRef.current = setTimeout(() => {
                 if (ringingAudioRef.current && !ringingAudioRef.current.paused) {
                     try {
                         ringingAudioRef.current.pause();
@@ -213,6 +221,11 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const stopRingingSound = useCallback(() => {
+        if (ringingStopTimeoutRef.current) {
+            clearTimeout(ringingStopTimeoutRef.current);
+            ringingStopTimeoutRef.current = null;
+        }
+
         if (ringingAudioRef.current) {
             try {
                 ringingAudioRef.current.pause();
@@ -270,6 +283,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
                 return;
             }
 
+            stopRingingSound();
+
             socket.off('incoming-call');
             socket.off('call-accepted');
             socket.off('call-rejected');
@@ -305,6 +320,9 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
             // ── Teacher receives incoming call ────────────────────────────────────
             socket.on('incoming-call', (data: IncomingCallData) => {
                 console.log('[Call] Incoming call from:', data.callerName);
+                if (incomingAutoRejectRef.current) {
+                    clearTimeout(incomingAutoRejectRef.current);
+                }
                 setIncomingCall(data);
                 setCurrentChannel(data.channel);
                 setOtherUserId(data.studentId);
