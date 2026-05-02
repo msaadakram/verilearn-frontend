@@ -549,6 +549,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
             clearTimeout(incomingAutoRejectRef.current);
         }
 
+        stopRingingSound();
+
         socket.emit('call-accepted', {
             channel: incomingCall.channel,
             studentId: incomingCall.studentId,
