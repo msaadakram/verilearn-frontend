@@ -22,7 +22,6 @@ import {
   ChevronLeft,
   Mic,
   X,
-  Users,
   MessageSquare,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -231,7 +230,6 @@ export function Messages() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [showSidebar, setShowSidebar] = useState(true);
-  const [sidebarTab, setSidebarTab] = useState<'chats' | 'people'>('chats');
   const [input, setInput] = useState('');
   const [showEmoji, setShowEmoji] = useState(false);
   const [sending, setSending] = useState(false);
@@ -276,20 +274,6 @@ export function Messages() {
       return info?.name?.toLowerCase().includes(q) || conv.lastMessage?.text?.toLowerCase().includes(q);
     });
   }, [conversations, myUid, searchQuery]);
-
-  const filteredUsers = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    if (!q) return allUsers;
-    return allUsers.filter((u) =>
-      u.name.toLowerCase().includes(q) || u.role.toLowerCase().includes(q),
-    );
-  }, [allUsers, searchQuery]);
-
-  // UIDs of people already in conversations
-  const activeConvUids = useMemo(
-    () => new Set(conversations.map((c) => getPartnerUid(c, myUid)).filter(Boolean) as string[]),
-    [conversations, myUid],
-  );
 
   // ── Auto-create conversation when navigating via URL ──────────────────────
 
@@ -460,58 +444,12 @@ export function Messages() {
                   </span>
                 </div>
 
-                {/* Tab switcher */}
-                <div className="flex gap-1 p-1 rounded-xl mb-3" style={{ background: 'var(--muted)' }}>
-                  <button
-                    onClick={() => setSidebarTab('chats')}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all"
-                    style={sidebarTab === 'chats'
-                      ? { background: 'white', color: '#7ab8ba', boxShadow: '0 1px 6px rgba(0,0,0,0.08)' }
-                      : { color: 'var(--muted-foreground)' }
-                    }
-                  >
-                    <MessageSquare className="w-3.5 h-3.5" />
-                    Chats
-                    {unreadCount > 0 ? (
-                      <motion.span
-                        key={unreadCount}
-                        initial={{ scale: 0.6, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="text-[10px] px-1.5 rounded-full text-white font-semibold"
-                        style={{ background: '#ef4444', minWidth: '1.1rem', textAlign: 'center', lineHeight: '1.4rem' }}
-                      >
-                        {unreadCount > 99 ? '99+' : unreadCount}
-                      </motion.span>
-                    ) : conversations.length > 0 ? (
-                      <span className="text-[10px] px-1 rounded-full" style={{ background: sidebarTab === 'chats' ? 'rgba(122,184,186,0.15)' : 'rgba(0,0,0,0.08)' }}>
-                        {conversations.length}
-                      </span>
-                    ) : null}
-                  </button>
-                  <button
-                    onClick={() => setSidebarTab('people')}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all"
-                    style={sidebarTab === 'people'
-                      ? { background: 'white', color: '#7ab8ba', boxShadow: '0 1px 6px rgba(0,0,0,0.08)' }
-                      : { color: 'var(--muted-foreground)' }
-                    }
-                  >
-                    <Users className="w-3.5 h-3.5" />
-                    All People
-                    {allUsers.length > 0 && (
-                      <span className="text-[10px] px-1 rounded-full" style={{ background: sidebarTab === 'people' ? 'rgba(122,184,186,0.15)' : 'rgba(0,0,0,0.08)' }}>
-                        {allUsers.length}
-                      </span>
-                    )}
-                  </button>
-                </div>
-
                 {/* Search */}
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)]" />
                   <input
                     type="text"
-                    placeholder={sidebarTab === 'chats' ? 'Search chats...' : 'Search people...'}
+                    placeholder="Search chats..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-9 pr-3 py-2.5 rounded-xl text-sm outline-none"
@@ -523,79 +461,37 @@ export function Messages() {
               {/* List */}
               <div className="flex-1 overflow-y-auto px-3 py-1 space-y-0.5">
 
-                {/* ── Chats tab ──────────────────────────────────────────── */}
-                {sidebarTab === 'chats' && (
-                  <>
-                    <SectionHeader icon={MessageSquare} label="Active Chats" count={filteredConversations.length} />
-                    {loadingConversations ? (
-                      <div className="py-10 text-center text-xs text-[var(--muted-foreground)]">Loading…</div>
-                    ) : filteredConversations.length === 0 ? (
-                      <div className="py-8 text-center">
-                        <MessageSquare className="w-8 h-8 mx-auto mb-2" style={{ color: 'rgba(122,184,186,0.4)' }} />
-                        <p className="text-xs text-[var(--muted-foreground)]">No chats yet.<br />Open <strong>All People</strong> to start one.</p>
-                      </div>
-                    ) : (
-                      filteredConversations.map((conv, idx) => {
-                        const uid = getPartnerUid(conv, myUid);
-                        if (!uid) return null;
-                        const info = conv.participantInfo?.[uid];
-                        const isActive = activeConversation?.id === conv.id;
-                        const unread = unreadByConversation[conv.id] || 0;
-                        return (
-                          <SidebarItem
-                            key={conv.id}
-                            idx={idx}
-                            name={info?.name || uid}
-                            avatar={info?.avatar || DEFAULT_AVATAR}
-                            subtitle={conv.lastMessage?.text || 'Start a conversation'}
-                            unread={unread}
-                            online={isUserOnline(uid)}
-                            isActive={isActive}
-                            time={conv.lastMessage?.sentAt}
-                            onClick={() => openConversation(conv)}
-                          />
-                        );
-                      })
-                    )}
-                  </>
-                )}
-
-                {/* ── People tab ─────────────────────────────────────────── */}
-                {sidebarTab === 'people' && (
-                  <>
-                    <SectionHeader icon={Users} label="All Registered Users" count={filteredUsers.length} />
-                    {filteredUsers.length === 0 ? (
-                      <div className="py-8 text-center">
-                        <Users className="w-8 h-8 mx-auto mb-2" style={{ color: 'rgba(122,184,186,0.4)' }} />
-                        <p className="text-xs text-[var(--muted-foreground)]">
-                          {allUsers.length === 0
-                            ? 'No other users have logged in yet.'
-                            : 'No results match your search.'}
-                        </p>
-                      </div>
-                    ) : (
-                      filteredUsers.map((person, idx) => {
-                        const convId = buildConvId(myUid, person.uid);
-                        const existingConv = conversations.find((c) => c.id === convId);
-                        const isActive = contactId === person.uid;
-                        return (
-                          <SidebarItem
-                            key={person.uid}
-                            idx={idx}
-                            name={person.name}
-                            avatar={person.avatar || DEFAULT_AVATAR}
-                            subtitle={existingConv?.lastMessage?.text || 'Tap to message'}
-                            role={person.role}
-                            online={isUserOnline(person.uid)}
-                            isActive={isActive}
-                            time={existingConv?.lastMessage?.sentAt}
-                            unread={activeConvUids.has(person.uid) ? unreadByConversation[convId] : undefined}
-                            onClick={() => openChat(person)}
-                          />
-                        );
-                      })
-                    )}
-                  </>
+                {/* ── Active Chats ──────────────────────────────────────────── */}
+                <SectionHeader icon={MessageSquare} label="Active Chats" count={filteredConversations.length} />
+                {loadingConversations ? (
+                  <div className="py-10 text-center text-xs text-[var(--muted-foreground)]">Loading…</div>
+                ) : filteredConversations.length === 0 ? (
+                  <div className="py-8 text-center">
+                    <MessageSquare className="w-8 h-8 mx-auto mb-2" style={{ color: 'rgba(122,184,186,0.4)' }} />
+                    <p className="text-xs text-[var(--muted-foreground)]">No active chats yet.<br />Start a conversation to begin chatting.</p>
+                  </div>
+                ) : (
+                  filteredConversations.map((conv, idx) => {
+                    const uid = getPartnerUid(conv, myUid);
+                    if (!uid) return null;
+                    const info = conv.participantInfo?.[uid];
+                    const isActive = activeConversation?.id === conv.id;
+                    const unread = unreadByConversation[conv.id] || 0;
+                    return (
+                      <SidebarItem
+                        key={conv.id}
+                        idx={idx}
+                        name={info?.name || uid}
+                        avatar={info?.avatar || DEFAULT_AVATAR}
+                        subtitle={conv.lastMessage?.text || 'Start a conversation'}
+                        unread={unread}
+                        online={isUserOnline(uid)}
+                        isActive={isActive}
+                        time={conv.lastMessage?.sentAt}
+                        onClick={() => openConversation(conv)}
+                      />
+                    );
+                  })
                 )}
               </div>
 
