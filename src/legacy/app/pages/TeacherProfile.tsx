@@ -83,6 +83,7 @@ export function TeacherProfile() {
   const { initiateCall, callStatus } = useCall();
   const currentUser = getStoredAuthUser();
   const isStudent = currentUser?.profession === 'student';
+  const isOwnProfile = Boolean(currentUser && teacherId && currentUser.id === teacherId);
 
   const handleShareProfile = async () => {
     const url = window.location.href;
@@ -407,29 +408,53 @@ export function TeacherProfile() {
                 transition={{ delay: 0.5, duration: 0.6 }}
                 className="flex flex-col gap-2 md:pb-0"
               >
-                <Link to={`/student-dashboard/book/${teacher.id}`}>
+                {isOwnProfile ? (
                   <motion.button
-                    whileHover={{ scale: 1.04, boxShadow: `0 0 30px ${teacher.color}60` }}
-                    whileTap={{ scale: 0.97 }}
-                    className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white"
-                    style={{ background: `linear-gradient(135deg, ${teacher.color}, ${teacher.color}cc)`, color: '#1a2332', fontWeight: 600 }}
+                    className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white opacity-50 cursor-not-allowed"
+                    title="You cannot book a session with yourself"
+                    disabled
+                    style={{ background: `linear-gradient(135deg, ${teacher.color}, ${teacher.color}55)`, color: '#1a2332', fontWeight: 600 }}
                   >
                     <Calendar className="w-4 h-4" />
                     Book a Session
                   </motion.button>
-                </Link>
-                <motion.button
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => navigate(`/messages/${teacher.id}`)}
-                  className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white/80 border border-white/20 backdrop-blur-sm"
-                  style={{ background: 'rgba(255,255,255,0.08)' }}
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  Message
-                </motion.button>
+                ) : (
+                  <Link to={`/student-dashboard/book/${teacher.id}`}>
+                    <motion.button
+                      whileHover={{ scale: 1.04, boxShadow: `0 0 30px ${teacher.color}60` }}
+                      whileTap={{ scale: 0.97 }}
+                      className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white"
+                      style={{ background: `linear-gradient(135deg, ${teacher.color}, ${teacher.color}cc)`, color: '#1a2332', fontWeight: 600 }}
+                    >
+                      <Calendar className="w-4 h-4" />
+                      Book a Session
+                    </motion.button>
+                  </Link>
+                )}
+                {isOwnProfile ? (
+                  <motion.button
+                    className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white/80 border border-white/20 backdrop-blur-sm opacity-50 cursor-not-allowed"
+                    title="You cannot message yourself"
+                    disabled
+                    style={{ background: 'rgba(255,255,255,0.08)' }}
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    Message
+                  </motion.button>
+                ) : (
+                  <motion.button
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => navigate(`/messages/${teacher.id}`)}
+                    className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white/80 border border-white/20 backdrop-blur-sm"
+                    style={{ background: 'rgba(255,255,255,0.08)' }}
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    Message
+                  </motion.button>
+                )}
                 {/* Video Call button — only visible to students */}
-                {isStudent && (
+                {isStudent && !isOwnProfile && (
                   <motion.button
                     whileHover={{ scale: 1.04, boxShadow: '0 0 24px rgba(34,197,94,0.5)' }}
                     whileTap={{ scale: 0.97 }}
@@ -790,27 +815,51 @@ export function TeacherProfile() {
                 </div>
 
                 {/* CTA buttons */}
-                <Link to={`/student-dashboard/book/${teacher.id}`}>
+                {isOwnProfile ? (
                   <motion.button
-                    whileHover={{ scale: 1.02, boxShadow: `0 8px 30px ${teacher.color}50` }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full py-3.5 rounded-xl text-white mb-3 flex items-center justify-center gap-2"
-                    style={{ background: `linear-gradient(135deg, ${teacher.color}, ${teacher.color}cc)`, fontWeight: 600 }}
+                    className="w-full py-3.5 rounded-xl text-white mb-3 flex items-center justify-center gap-2 opacity-50 cursor-not-allowed"
+                    disabled
+                    title="You cannot book a session with yourself"
+                    style={{ background: `linear-gradient(135deg, ${teacher.color}, ${teacher.color}55)`, fontWeight: 600 }}
                   >
                     <Calendar className="w-4 h-4" />
                     Book a Session
                   </motion.button>
-                </Link>
-                <motion.button
-                  whileHover={{ scale: 1.02, borderColor: teacher.color, color: teacher.color }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => navigate(`/messages/${teacher.id}`)}
-                  className="w-full py-3.5 rounded-xl border-2 transition-all flex items-center justify-center gap-2"
-                  style={{ borderColor: 'rgba(0,0,0,0.1)', color: 'var(--muted-foreground)' }}
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  Send Message
-                </motion.button>
+                ) : (
+                  <Link to={`/student-dashboard/book/${teacher.id}`}>
+                    <motion.button
+                      whileHover={{ scale: 1.02, boxShadow: `0 8px 30px ${teacher.color}50` }}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full py-3.5 rounded-xl text-white mb-3 flex items-center justify-center gap-2"
+                      style={{ background: `linear-gradient(135deg, ${teacher.color}, ${teacher.color}cc)`, fontWeight: 600 }}
+                    >
+                      <Calendar className="w-4 h-4" />
+                      Book a Session
+                    </motion.button>
+                  </Link>
+                )}
+                {isOwnProfile ? (
+                  <motion.button
+                    className="w-full py-3.5 rounded-xl border-2 transition-all flex items-center justify-center gap-2 opacity-50 cursor-not-allowed"
+                    disabled
+                    title="You cannot message yourself"
+                    style={{ borderColor: 'rgba(0,0,0,0.1)', color: 'var(--muted-foreground)' }}
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    Send Message
+                  </motion.button>
+                ) : (
+                  <motion.button
+                    whileHover={{ scale: 1.02, borderColor: teacher.color, color: teacher.color }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate(`/messages/${teacher.id}`)}
+                    className="w-full py-3.5 rounded-xl border-2 transition-all flex items-center justify-center gap-2"
+                    style={{ borderColor: 'rgba(0,0,0,0.1)', color: 'var(--muted-foreground)' }}
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    Send Message
+                  </motion.button>
+                )}
 
                 {/* Trust badge */}
                 <div className="mt-4 pt-4 border-t flex items-center justify-center gap-2 text-xs text-[var(--muted-foreground)]"
