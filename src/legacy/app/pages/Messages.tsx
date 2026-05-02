@@ -328,7 +328,6 @@ export function Messages() {
   const openChat = async (person: FbUser) => {
     await getOrCreateConversation(myUid, myName, myAvatar, person.uid, person.name, person.avatar || '');
     navigate(`/messages/${person.uid}`, { replace: true });
-    setSidebarTab('chats');
   };
 
   const openConversation = (conv: FbConversation) => {
