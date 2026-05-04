@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate, useParams, Navigate } from 'react-router';
 import { BadgeCheck, MessageSquareText, Send, Star, TimerReset, X } from 'lucide-react';
-import { getStoredAuthUser } from '../services/auth';
+import { getStoredAuthUser, getStudentProfile, updateStoredAuthUser } from '../services/auth';
 import { submitBookingReview } from '../services/booking';
 import type { SessionCompletedData } from '../context/CallContext';
 
@@ -35,6 +35,18 @@ export function SessionReview() {
     if (!sessionResult || !isStudent || sessionResult.bookingId !== bookingId) {
         return <Navigate to="/student-dashboard" replace />;
     }
+
+    useEffect(() => {
+        let mounted = true;
+        getStudentProfile()
+            .then(response => {
+                if (mounted && response.user) {
+                    updateStoredAuthUser(response.user);
+                }
+            })
+            .catch(() => { });
+        return () => { mounted = false; };
+    }, []);
 
     const handleSubmitReview = async () => {
         if (!sessionResult?.bookingId || !isStudent || reviewSubmitting) {

@@ -168,6 +168,8 @@ export interface StudentTeacherDirectoryItem {
   };
   successfulSessions: number;
   sessionTier: SessionTier;
+  averageRating?: number;
+  reviewCount?: number;
 }
 
 export interface StudentTeacherDirectoryListResponse {

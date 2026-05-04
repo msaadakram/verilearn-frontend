@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation, useNavigate, useParams, Navigate } from 'react-router';
 import { BadgeCheck, Coins, TimerReset, X } from 'lucide-react';
-import { getStoredAuthUser } from '../services/auth';
+import { getStoredAuthUser, getTeacherProfile, updateStoredAuthUser } from '../services/auth';
 import type { SessionCompletedData } from '../context/CallContext';
 
 const summaryCardStyle: React.CSSProperties = {
@@ -41,6 +41,18 @@ export function SessionEarning() {
     if (!sessionResult || !isTeacher || sessionResult.bookingId !== bookingId) {
         return <Navigate to="/teacher-dashboard" replace />;
     }
+
+    React.useEffect(() => {
+        let mounted = true;
+        getTeacherProfile()
+            .then(response => {
+                if (mounted && response.user) {
+                    updateStoredAuthUser(response.user);
+                }
+            })
+            .catch(() => { });
+        return () => { mounted = false; };
+    }, []);
 
     const handleClose = () => {
         navigate('/teacher-dashboard');
