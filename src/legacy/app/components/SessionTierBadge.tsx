@@ -1,4 +1,4 @@
-import { Gem, Star } from 'lucide-react';
+import { Gem, Star, Medal } from 'lucide-react';
 import type { SessionTier } from '../services/auth';
 import { SESSION_TIER_META } from '../utils/sessionTier';
 
@@ -27,7 +27,9 @@ export function SessionTierBadge({ tier, sessions, size = 'md', iconOnly = false
 
   const iconEl = meta.icon === 'gem'
     ? <Gem className={`${iconClass} fill-current`} />
-    : <Star className={`${iconClass} fill-current`} />;
+    : meta.icon === 'medal'
+      ? <Medal className={`${iconClass} fill-current`} />
+      : <Star className={`${iconClass} fill-current`} />;
 
   if (iconOnly) {
     return (

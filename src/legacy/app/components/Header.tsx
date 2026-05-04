@@ -227,19 +227,19 @@ export function Header() {
                     {userCredits}
                   </span>
                 </motion.div>
-                {/* Notification / Bronze pass badge */}
+                {/* Notification / Platinum pass badge */}
                 {teacherPassedAssessment ? (
                   <div className="relative">
                     <div
                       className="w-10 h-10 rounded-xl flex items-center justify-center border"
                       title="Teacher assessment passed"
                       style={{
-                        borderColor: 'rgba(205,127,50,0.35)',
-                        background: 'rgba(205,127,50,0.12)',
-                        boxShadow: '0 0 18px rgba(205,127,50,0.22)',
+                        borderColor: 'rgba(229,228,226,0.35)',
+                        background: 'rgba(229,228,226,0.12)',
+                        boxShadow: '0 0 18px rgba(229,228,226,0.22)',
                       }}
                     >
-                      <Medal className="w-5 h-5" style={{ color: '#cd7f32' }} />
+                      <Medal className="w-5 h-5" style={{ color: '#b0b5b9' }} />
                     </div>
                   </div>
                 ) : (

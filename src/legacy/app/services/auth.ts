@@ -1,5 +1,5 @@
 export type Profession = 'student' | 'teacher';
-export type SessionTier = 'Bronze' | 'Gold' | 'Diamond';
+export type SessionTier = 'Bronze' | 'Gold' | 'Platinum' | 'Diamond';
 
 export interface TeacherAssessmentState {
   totalQuestions: number;

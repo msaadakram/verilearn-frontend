@@ -2,7 +2,7 @@ import type { SessionTier } from '../services/auth';
 
 export interface SessionTierMeta {
   label: SessionTier;
-  icon: 'star' | 'gem';
+  icon: 'star' | 'gem' | 'medal';
   color: string;
   bg: string;
   border: string;
@@ -18,7 +18,7 @@ export function getSessionTier(successfulSessions = 0): SessionTier {
   }
 
   if (count >= 10) {
-    return 'Gold';
+    return 'Platinum';
   }
 
   return 'Bronze';
@@ -34,6 +34,15 @@ export const SESSION_TIER_META: Record<SessionTier, SessionTierMeta> = {
     glow: 'rgba(205,127,50,0.18)',
     description: 'Up-and-coming tutor with up to 9 successful live sessions.',
   },
+  Platinum: {
+    label: 'Platinum',
+    icon: 'medal',
+    color: '#b0b5b9',
+    bg: 'rgba(229,228,226,0.15)',
+    border: 'rgba(229,228,226,0.4)',
+    glow: 'rgba(229,228,226,0.25)',
+    description: 'Trusted tutor with 10–29 successful live sessions.',
+  },
   Gold: {
     label: 'Gold',
     icon: 'star',
@@ -41,7 +50,7 @@ export const SESSION_TIER_META: Record<SessionTier, SessionTierMeta> = {
     bg: 'rgba(245,158,11,0.12)',
     border: 'rgba(245,158,11,0.28)',
     glow: 'rgba(245,158,11,0.22)',
-    description: 'Trusted tutor with 10–29 successful live sessions.',
+    description: 'Trusted tutor with successful live sessions.',
   },
   Diamond: {
     label: 'Diamond',

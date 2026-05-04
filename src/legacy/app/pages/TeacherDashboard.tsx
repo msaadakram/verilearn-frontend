@@ -163,13 +163,24 @@ export function TeacherDashboard() {
       return bookingTeacherId === teacherId;
     });
 
-    const completedSessions = teacherBookings.filter((booking) => booking.status === 'completed').length;
-    const successfulSessions = teacherBookings.filter(
+    const pastBookings = teacherBookings.filter((booking) =>
+      ['completed', 'no_show'].includes(booking.status)
+    );
+
+    const completedSessions = pastBookings.length;
+
+    const localSuccessfulSessions = pastBookings.filter(
       (booking) => booking.status === 'completed' && booking.studentJoined && booking.teacherJoined,
     ).length;
-    const successRate = teacherBookings.length > 0
-      ? Math.round((successfulSessions / teacherBookings.length) * 100)
-      : 0;
+
+    const successfulSessions = currentUser?.teacherSessionStats?.successfulSessions || 0;
+
+    let successRate = 0;
+    if (pastBookings.length > 0) {
+      successRate = Math.round((localSuccessfulSessions / pastBookings.length) * 100);
+    } else if (successfulSessions > 0) {
+      successRate = 100;
+    }
 
     return {
       totalBookings: teacherBookings.length,
@@ -177,7 +188,7 @@ export function TeacherDashboard() {
       successfulSessions,
       successRate,
     };
-  }, [bookingRequests, currentUser?.id]);
+  }, [bookingRequests, currentUser?.id, currentUser?.teacherSessionStats?.successfulSessions]);
 
   const totalBookingPages = Math.max(1, Math.ceil(bookingRequests.length / BOOKINGS_PER_PAGE));
 

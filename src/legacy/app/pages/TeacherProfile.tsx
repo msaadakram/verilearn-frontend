@@ -382,7 +382,7 @@ export function TeacherProfile() {
                 <div className="flex flex-wrap gap-3">
                   {[
                     { icon: <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />, label: `${teacher.rating} rating` },
-                    { icon: <Users className="w-3.5 h-3.5 text-white/60" />, label: `${teacher.students.toLocaleString()} students` },
+                    { icon: <Users className="w-3.5 h-3.5 text-white/60" />, label: `${teacher.students.toLocaleString()} successful sessions attended` },
                     { icon: <Clock className="w-3.5 h-3.5 text-white/60" />, label: teacher.experience },
                   ].map((stat, i) => (
                     <motion.div
@@ -452,26 +452,7 @@ export function TeacherProfile() {
                     Message
                   </motion.button>
                 )}
-                {/* Video Call button — only visible to students */}
-                {isStudent && !isOwnProfile && (
-                  <motion.button
-                    whileHover={{ scale: 1.04, boxShadow: '0 0 24px rgba(34,197,94,0.5)' }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => initiateCall(teacher.id)}
-                    disabled={callStatus !== 'idle'}
-                    className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white border border-white/20 backdrop-blur-sm"
-                    style={{
-                      background: callStatus !== 'idle'
-                        ? 'rgba(255,255,255,0.05)'
-                        : 'linear-gradient(135deg, rgba(34,197,94,0.8), rgba(22,163,74,0.8))',
-                      opacity: callStatus !== 'idle' ? 0.5 : 1,
-                      cursor: callStatus !== 'idle' ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    <Video className="w-4 h-4" />
-                    {callStatus === 'calling' ? 'Calling…' : callStatus !== 'idle' ? 'In Call' : 'Video Call'}
-                  </motion.button>
-                )}
+
               </motion.div>
             </div>
           </div>
@@ -579,7 +560,7 @@ export function TeacherProfile() {
                     <div className="grid grid-cols-2 gap-3">
                       {[
                         { icon: <BookOpen className="w-4 h-4" />, label: 'Subject', value: teacher.subject },
-                        { icon: <Users className="w-4 h-4" />, label: 'Students', value: teacher.students.toLocaleString() },
+                        { icon: <Users className="w-4 h-4" />, label: 'Successful sessions attended', value: teacher.students.toLocaleString() },
                         { icon: <Clock className="w-4 h-4" />, label: 'Availability', value: teacher.availability },
                         { icon: <Globe className="w-4 h-4" />, label: 'Languages', value: teacher.languages.join(', ') },
                         { icon: <Star className="w-4 h-4" />, label: 'Experience', value: teacher.experience },
@@ -814,11 +795,7 @@ export function TeacherProfile() {
                   </div>
                 </div>
 
-                {/* Next available */}
-                <div className="flex items-center gap-2 mb-5 text-sm text-[var(--muted-foreground)]">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400" />
-                  Next available: <span className="text-[var(--foreground)]">Tomorrow, 10 AM</span>
-                </div>
+
 
                 {/* CTA buttons */}
                 {isOwnProfile ? (

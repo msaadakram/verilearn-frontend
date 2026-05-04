@@ -636,6 +636,9 @@ function TeacherCard({ teacher }: { teacher: Teacher }) {
                   if (tier === 'Diamond') {
                     icon = <Gem className="w-3.5 h-3.5 mr-1" />;
                     c = { bg: 'rgba(14,165,233,0.1)', color: '#0ea5e9', border: 'rgba(14,165,233,0.3)' };
+                  } else if (tier === 'Platinum') {
+                    icon = <Medal className="w-3.5 h-3.5 mr-1 text-[#b0b5b9]" />;
+                    c = { bg: 'rgba(229,228,226,0.15)', color: '#b0b5b9', border: 'rgba(229,228,226,0.4)' };
                   } else if (tier === 'Gold') {
                     icon = <Award className="w-3.5 h-3.5 mr-1" />;
                     c = { bg: 'rgba(245,158,11,0.12)', color: '#f59e0b', border: 'rgba(245,158,11,0.25)' };
