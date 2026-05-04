@@ -1035,20 +1035,7 @@ export function TeacherDashboard() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                <div className="rounded-xl border border-black/5 bg-[var(--muted)]/35 p-3 text-center">
-                  <div className="text-base font-semibold text-[var(--foreground)]">98%</div>
-                  <div className="text-[11px] text-[var(--muted-foreground)]">recommend rate</div>
-                </div>
-                <div className="rounded-xl border border-black/5 bg-[var(--muted)]/35 p-3 text-center">
-                  <div className="text-base font-semibold text-[var(--foreground)]">24h</div>
-                  <div className="text-[11px] text-[var(--muted-foreground)]">avg response</div>
-                </div>
-                <div className="rounded-xl border border-black/5 bg-[var(--muted)]/35 p-3 text-center">
-                  <div className="text-base font-semibold text-[var(--foreground)]">92%</div>
-                  <div className="text-[11px] text-[var(--muted-foreground)]">repeat students</div>
-                </div>
-              </div>
+
 
               <div className="space-y-3">
                 {(!reviewsData?.reviews || reviewsData.reviews.length === 0) && (
