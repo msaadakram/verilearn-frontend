@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import {
   Search, Star, BookOpen, Clock, Award,
   Bell, Sparkles, ChevronRight, Zap, Users, Globe, Play,
-  Edit3, Brain, Trophy, Shield,
+  Edit3, Brain, Trophy, Shield, Medal, Gem,
 } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'motion/react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
@@ -35,6 +35,7 @@ interface Teacher {
   languages: string[];
   color: string;
   badge: 'Not Verified' | 'Verified' | 'Expert';
+  sessionTier: string;
 }
 
 export const teachers: Teacher[] = [];
@@ -74,6 +75,7 @@ function mapTeacherToCard(teacher: StudentTeacherDirectoryItem): Teacher {
     languages: Array.isArray(teacher.languages) ? teacher.languages : [],
     color,
     badge: 'Verified',
+    sessionTier: teacher.sessionTier || 'Bronze',
   };
 }
 
@@ -625,20 +627,26 @@ function TeacherCard({ teacher }: { teacher: Teacher }) {
                   {teacher.name}
                 </h3>
                 <TutorBadge status={teacher.badge} size="sm" />
-                {/* Tier badge: Bronze / Silver / Gold based on rating */}
+                {/* Tier badge: Bronze / Gold / Diamond based on session tier */}
                 {(() => {
-                  const tier = teacher.rating >= 4.8 ? 'Gold' : teacher.rating >= 4.5 ? 'Silver' : 'Bronze';
-                  const colors: Record<string, { bg: string; color: string; border: string }> = {
-                    Gold: { bg: 'rgba(245,158,11,0.12)', color: '#f59e0b', border: 'rgba(245,158,11,0.25)' },
-                    Silver: { bg: 'rgba(156,163,175,0.12)', color: '#9ca3af', border: 'rgba(156,163,175,0.25)' },
-                    Bronze: { bg: 'rgba(205,127,50,0.12)', color: '#cd7f32', border: 'rgba(205,127,50,0.25)' },
-                  };
-                  const c = colors[tier];
+                  const tier = teacher.sessionTier || 'Bronze';
+                  let icon = <Medal className="w-3.5 h-3.5 mr-1" />;
+                  let c = { bg: 'rgba(205,127,50,0.12)', color: '#cd7f32', border: 'rgba(205,127,50,0.25)' };
+
+                  if (tier === 'Diamond') {
+                    icon = <Gem className="w-3.5 h-3.5 mr-1" />;
+                    c = { bg: 'rgba(14,165,233,0.1)', color: '#0ea5e9', border: 'rgba(14,165,233,0.3)' };
+                  } else if (tier === 'Gold') {
+                    icon = <Award className="w-3.5 h-3.5 mr-1" />;
+                    c = { bg: 'rgba(245,158,11,0.12)', color: '#f59e0b', border: 'rgba(245,158,11,0.25)' };
+                  }
+
                   return (
                     <span
-                      className="px-2 py-0.5 rounded-full text-xs font-semibold"
+                      className="px-2 py-0.5 flex items-center rounded-full text-xs font-semibold"
                       style={{ background: c.bg, color: c.color, border: `1px solid ${c.border}` }}
                     >
+                      {icon}
                       {tier}
                     </span>
                   );

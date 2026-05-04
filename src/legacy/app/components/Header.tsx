@@ -4,7 +4,7 @@ import { Button } from './Button';
 import {
   GraduationCap, House, Menu, X, MessageCircle, Bell, Medal,
   BookOpen, LayoutDashboard, ChevronDown, LogOut, ArrowRight,
-  Settings, User, HelpCircle, Info, Star, Coins,
+  Settings, User, HelpCircle, Info, Star, Coins, Gem, Award,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
@@ -129,6 +129,37 @@ export function Header() {
     { id: 3, avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100', name: 'Emily Rodriguez', text: 'left you a new review', time: 'Yesterday', unread: false },
   ];
 
+  let creditIcon = <Coins className="w-4 h-4 text-amber-500" />;
+  let creditColors = {
+    borderColor: 'rgba(245,158,11,0.25)',
+    background: 'rgba(245,158,11,0.06)',
+    text: 'text-amber-700',
+  };
+  const userCredits = currentUser?.learningCredits ?? 0;
+
+  if (userCredits >= 50) {
+    creditIcon = <Gem className="w-4 h-4 text-sky-500" />;
+    creditColors = {
+      borderColor: 'rgba(14,165,233,0.3)',
+      background: 'rgba(14,165,233,0.1)',
+      text: 'text-sky-700',
+    };
+  } else if (userCredits >= 20) {
+    creditIcon = <Award className="w-4 h-4 text-yellow-500" />;
+    creditColors = {
+      borderColor: 'rgba(234,179,8,0.35)',
+      background: 'rgba(234,179,8,0.12)',
+      text: 'text-yellow-700',
+    };
+  } else if (userCredits >= 10) {
+    creditIcon = <Medal className="w-4 h-4" style={{ color: '#cd7f32' }} />;
+    creditColors = {
+      borderColor: 'rgba(205,127,50,0.35)',
+      background: 'rgba(205,127,50,0.12)',
+      text: 'text-amber-900', // Close to bronze dark
+    };
+  }
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-[var(--border)]">
       <div className="max-w-7xl mx-auto px-6 py-3">
@@ -186,14 +217,14 @@ export function Header() {
                   whileHover={{ scale: 1.05 }}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border"
                   style={{
-                    borderColor: 'rgba(245,158,11,0.25)',
-                    background: 'rgba(245,158,11,0.06)',
+                    borderColor: creditColors.borderColor,
+                    background: creditColors.background,
                   }}
-                  title="Your credit balance"
+                  title="Your credit balance / rank"
                 >
-                  <Coins className="w-4 h-4 text-amber-500" />
-                  <span className="text-sm font-semibold text-amber-700">
-                    {currentUser?.learningCredits ?? 0}
+                  {creditIcon}
+                  <span className={`text-sm font-semibold ${creditColors.text}`}>
+                    {userCredits}
                   </span>
                 </motion.div>
                 {/* Notification / Bronze pass badge */}

@@ -14,6 +14,7 @@ import {
   getStoredAuthUser,
   type StudentTeacherDirectoryItem,
 } from '../services/auth';
+import { getTeacherReviews, type TeacherReviewsResponse } from '../services/booking';
 import { useCall } from '../context/CallContext';
 
 interface Teacher {
@@ -80,6 +81,8 @@ export function TeacherProfile() {
   const [liked, setLiked] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'about' | 'reviews'>('about');
+  const [reviewsData, setReviewsData] = useState<TeacherReviewsResponse | null>(null);
+  const [loadingReviews, setLoadingReviews] = useState(true);
   const { initiateCall, callStatus } = useCall();
   const currentUser = getStoredAuthUser();
   const isStudent = currentUser?.profession === 'student';
@@ -143,6 +146,23 @@ export function TeacherProfile() {
     };
   }, [teacherId]);
 
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      if (!teacherId) return;
+      try {
+        setLoadingReviews(true);
+        const response = await getTeacherReviews(teacherId);
+        if (mounted) setReviewsData(response);
+      } catch (error) {
+        // Handle silently
+      } finally {
+        if (mounted) setLoadingReviews(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [teacherId]);
+
   if (loadingTeacher) {
     return (
       <div className="min-h-screen pt-[73px]" style={{ background: 'linear-gradient(160deg, #f0f9f9 0%, #f8fafc 100%)' }}>
@@ -177,32 +197,11 @@ export function TeacherProfile() {
     );
   }
 
-  const reviews = [
-    {
-      name: 'Jordan Lee',
-      avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100',
-      rating: 5,
-      time: '2 weeks ago',
-      verified: true,
-      text: `${teacher.name} is an exceptional teacher. The sessions are clear, engaging, and I've learned more in a month than I did in a semester elsewhere.`,
-    },
-    {
-      name: 'Morgan Rivera',
-      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100',
-      rating: 5,
-      time: '1 month ago',
-      verified: true,
-      text: 'Extremely patient and thorough. Breaks down complex topics into bite-sized pieces. Highly recommend!',
-    },
-    {
-      name: 'Taylor Kim',
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100',
-      rating: 4,
-      time: '2 months ago',
-      verified: false,
-      text: 'Great tutor with real-world experience. The practical projects really helped solidify my understanding.',
-    },
-  ];
+  const reviews = reviewsData?.reviews || [];
+  const averageRating = reviewsData?.summary?.averageRating || 0;
+  const totalReviews = reviewsData?.summary?.totalReviews || 0;
+  const ratingDistribution = reviewsData?.summary?.distribution || [];
+
 
   const benefits = [
     { icon: <Video className="w-4 h-4" />, text: 'One-on-one live sessions tailored to your goals' },
@@ -503,7 +502,7 @@ export function TeacherProfile() {
                   style={{ color: activeTab === tab ? '#1a2332' : 'var(--muted-foreground)' }}
                 >
                   <span className="relative">
-                    {tab === 'reviews' ? `Reviews (${teacher!.reviews})`
+                    {tab === 'reviews' ? `Reviews (${totalReviews})`
                       : 'About'}
                   </span>
                 </motion.button>
@@ -631,22 +630,23 @@ export function TeacherProfile() {
                           className="mb-1"
                           style={{ fontSize: '3.5rem', lineHeight: 1, fontWeight: 700, color: teacher.color }}
                         >
-                          {teacher.rating}
+                          {averageRating.toFixed(1)}
                         </div>
                         <div className="flex gap-0.5 justify-center mb-1">
                           {Array.from({ length: 5 }).map((_, i) => (
-                            <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                            <Star key={i} className={`w-4 h-4 ${i < Math.round(averageRating) ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`} />
                           ))}
                         </div>
-                        <div className="text-xs text-[var(--muted-foreground)]">{teacher.reviews} reviews</div>
+                        <div className="text-xs text-[var(--muted-foreground)]">{totalReviews} reviews</div>
                       </div>
                       <div className="flex-1 space-y-2">
                         {[5, 4, 3, 2, 1].map((stars) => {
-                          const pct = stars === 5 ? 78 : stars === 4 ? 15 : stars === 3 ? 5 : 2;
+                          const distItem = ratingDistribution.find(d => d.stars === stars);
+                          const pct = distItem?.percent || 0;
                           return (
                             <div key={stars} className="flex items-center gap-2">
                               <span className="text-xs w-3 text-[var(--muted-foreground)]">{stars}</span>
-                              <Star className="w-3 h-3 fill-yellow-400 text-yellow-400 flex-shrink-0" />
+                              <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400 flex-shrink-0" />
                               <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--muted)' }}>
                                 <motion.div
                                   initial={{ width: 0 }}
@@ -666,9 +666,12 @@ export function TeacherProfile() {
 
                   {/* Review cards */}
                   <div className="space-y-4">
+                    {reviews.length === 0 && !loadingReviews && (
+                      <div className="text-[var(--muted-foreground)] text-sm italic">No reviews yet.</div>
+                    )}
                     {reviews.map((r, idx) => (
                       <motion.div
-                        key={r.name}
+                        key={r.bookingId}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: idx * 0.1, type: 'spring', stiffness: 260 }}
@@ -683,21 +686,19 @@ export function TeacherProfile() {
                         <div className="flex items-start gap-3 mb-3">
                           <motion.div whileHover={{ scale: 1.1 }} transition={{ type: 'spring', stiffness: 300 }}>
                             <ImageWithFallback
-                              src={r.avatar}
-                              alt={r.name}
+                              src={r.student?.avatarUrl || 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100'}
+                              alt={r.student?.name || 'Student'}
                               className="w-11 h-11 rounded-xl object-cover"
                             />
                           </motion.div>
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-0.5">
-                              <span className="text-[var(--foreground)] text-sm">{r.name}</span>
-                              {r.verified && (
-                                <span className="px-1.5 py-0.5 rounded-md text-xs flex items-center gap-1"
-                                  style={{ background: `${teacher.color}15`, color: teacher.color }}>
-                                  <CheckCircle2 className="w-3 h-3" />
-                                  Verified
-                                </span>
-                              )}
+                              <span className="text-[var(--foreground)] text-sm">{r.student?.name}</span>
+                              <span className="px-1.5 py-0.5 rounded-md text-xs flex items-center gap-1"
+                                style={{ background: `${teacher.color}15`, color: teacher.color }}>
+                                <CheckCircle2 className="w-3 h-3" />
+                                Verified
+                              </span>
                             </div>
                             <div className="flex items-center gap-2">
                               <div className="flex gap-0.5">
@@ -712,26 +713,31 @@ export function TeacherProfile() {
                                   </motion.div>
                                 ))}
                               </div>
-                              <span className="text-xs text-[var(--muted-foreground)]">{r.time}</span>
+                              <span className="text-xs text-[var(--muted-foreground)]">
+                                {new Date(r.submittedAt).toLocaleDateString()}
+                              </span>
                             </div>
                           </div>
                         </div>
-                        <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">{r.text}</p>
+                        {r.text && <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">{r.text}</p>}
                       </motion.div>
                     ))}
 
-                    <motion.button
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.5 }}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full py-3 rounded-xl text-sm flex items-center justify-center gap-2 bg-white/80 border text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
-                      style={{ borderColor: 'rgba(0,0,0,0.08)' }}
-                    >
-                      Load more reviews
-                      <ChevronDown className="w-4 h-4" />
-                    </motion.button>
+                    {reviews.length > 0 && (
+
+                      <motion.button
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.5 }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="w-full py-3 rounded-xl text-sm flex items-center justify-center gap-2 bg-white/80 border text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+                        style={{ borderColor: 'rgba(0,0,0,0.08)' }}
+                      >
+                        Load more reviews
+                        <ChevronDown className="w-4 h-4" />
+                      </motion.button>
+                    )}
                   </div>
                 </motion.div>
               )}

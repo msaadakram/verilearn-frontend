@@ -11,7 +11,6 @@ import {
 const categories = [
   { id: 'getting-started', icon: BookOpen, label: 'Getting Started', count: 6 },
   { id: 'account', icon: Settings, label: 'Account & Settings', count: 5 },
-  { id: 'billing', icon: CreditCard, label: 'Billing & Payments', count: 4 },
   { id: 'teachers', icon: Users, label: 'Finding Teachers', count: 5 },
   { id: 'sessions', icon: Clock, label: 'Sessions & Scheduling', count: 4 },
   { id: 'safety', icon: Shield, label: 'Trust & Safety', count: 3 },
@@ -32,12 +31,6 @@ const faqs: Record<string, { q: string; a: string }[]> = {
     { q: 'How do I delete my account?', a: 'Go to Settings > Account > Delete Account. Please note this action is permanent and all your data will be removed.' },
     { q: 'Can I switch between student and teacher roles?', a: 'Yes! You can add a teacher profile to an existing student account (or vice versa) from your dashboard settings.' },
     { q: 'How do I update my profile photo?', a: 'Click your avatar in the top right corner, go to Profile, and click the camera icon on your profile photo to upload a new one.' },
-  ],
-  'billing': [
-    { q: 'What payment methods do you accept?', a: 'We accept all major credit and debit cards (Visa, Mastercard, Amex), PayPal, and bank transfers in select countries.' },
-    { q: 'How do refunds work?', a: 'If a session is cancelled by the teacher or doesn\'t meet quality standards, you\'ll receive a full refund within 5-7 business days.' },
-    { q: 'When do teachers get paid?', a: 'Teachers are directed to an "earning credit" page after completing a session to verify their session earnings. Payments are sent periodically.' },
-    { q: 'Are there any hidden fees?', a: 'No hidden fees. The price you see on a teacher\'s profile is the price you pay. There\'s a small platform fee included in the displayed rate.' },
   ],
   'teachers': [
     { q: 'How are teachers verified?', a: 'All teachers go through our rigorous verification process including automated CNIC identity verification via our custom built robust OCR pipeline, credential checks, and subject proficiency tests.' },
@@ -131,8 +124,8 @@ export function Help() {
                   key={cat.id}
                   onClick={() => setActiveCategory(cat.id)}
                   className={`flex flex-col items-center gap-2 p-5 rounded-xl border transition-all ${activeCategory === cat.id
-                      ? 'border-[var(--teal-300)] bg-[var(--teal-50)] text-[var(--teal-600)]'
-                      : 'border-[var(--border)] hover:border-[var(--teal-200)] text-[var(--muted-foreground)]'
+                    ? 'border-[var(--teal-300)] bg-[var(--teal-50)] text-[var(--teal-600)]'
+                    : 'border-[var(--border)] hover:border-[var(--teal-200)] text-[var(--muted-foreground)]'
                     }`}
                 >
                   <cat.icon className="w-6 h-6" />

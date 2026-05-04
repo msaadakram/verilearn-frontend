@@ -30,6 +30,7 @@ import {
 } from '../services/auth';
 import {
   getMyBookings, acceptBooking as apiAcceptBooking, declineBooking as apiDeclineBooking, cancelBooking as apiCancelBooking,
+  getTeacherReviews, type TeacherReviewsResponse,
   type Booking,
   type BookingParticipant,
 } from '../services/booking';
@@ -64,40 +65,7 @@ const STUDENT_INQUIRIES = [
   { id: '3', name: 'James Liu', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100', subject: 'Data Science', message: 'Looking for help with my capstone ML project. Are you available this weekend?', time: '1 hr ago', isNew: false },
 ];
 
-const STUDENT_REVIEWS = [
-  {
-    name: 'Ayesha Khan',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120',
-    rating: 5,
-    time: '2 days ago',
-    verified: true,
-    text: 'The explanations were structured, calm, and easy to follow. I finally understood async patterns and felt confident enough to build my own project.',
-  },
-  {
-    name: 'Muhammad Hamza',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120',
-    rating: 5,
-    time: '1 week ago',
-    verified: true,
-    text: 'Great balance of theory and practice. I appreciated the quick feedback on my code and the clear action items after each session.',
-  },
-  {
-    name: 'Sara Ali',
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=120',
-    rating: 4,
-    time: '3 weeks ago',
-    verified: true,
-    text: 'Very professional and supportive. The session helped me close the gaps in React fundamentals and improved my confidence a lot.',
-  },
-];
 
-const RATING_DISTRIBUTION = [
-  { stars: 5, percent: 78 },
-  { stars: 4, percent: 15 },
-  { stars: 3, percent: 5 },
-  { stars: 2, percent: 1 },
-  { stars: 1, percent: 1 },
-];
 
 const ACTIVE_CHATS = [
   { id: 'michael-chen', name: 'Michael Chen', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100', subject: 'Node.js & APIs', lastMsg: 'Got it! I\'ll try that approach and report back.', time: '5 min ago', unread: 2 },
@@ -173,6 +141,7 @@ export function TeacherDashboard() {
   const [bookingsLoading, setBookingsLoading] = useState(false);
   const [bookingActionId, setBookingActionId] = useState<string | null>(null);
   const [bookingPage, setBookingPage] = useState(1);
+  const [reviewsData, setReviewsData] = useState<TeacherReviewsResponse | null>(null);
 
   const sessionStats = useMemo(() => {
     const teacherId = currentUser?.id;
@@ -344,7 +313,16 @@ export function TeacherDashboard() {
 
     void refreshOnboardingStatus();
     void loadBookings();
-  }, [currentUser?.profession, modeSyncing]);
+
+    (async () => {
+      try {
+        const response = await getTeacherReviews(currentUser.id);
+        setReviewsData(response);
+      } catch {
+        // ignore strictly
+      }
+    })();
+  }, [currentUser?.profession, modeSyncing, currentUser?.id]);
 
   const SessionJoinButton = ({ booking }: { booking: Booking }) => {
     const [timeLeft, setTimeLeft] = useState<string | null>(null);
@@ -1016,29 +994,33 @@ export function TeacherDashboard() {
 
               <div className="grid grid-cols-[auto,1fr] gap-5 rounded-2xl border border-black/5 bg-[linear-gradient(180deg,rgba(122,184,186,0.08),rgba(255,255,255,0.92))] p-4">
                 <div className="text-center min-w-[92px]">
-                  <div className="text-4xl font-semibold tracking-tight text-[var(--foreground)]">4.9</div>
+                  <div className="text-4xl font-semibold tracking-tight text-[var(--foreground)]">{reviewsData?.summary?.averageRating?.toFixed(1) || '0.0'}</div>
                   <div className="mt-1 flex justify-center gap-0.5">
                     {Array.from({ length: 5 }).map((_, index) => (
-                      <Star key={index} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      <Star key={index} className={`w-4 h-4 ${index < Math.round(reviewsData?.summary?.averageRating || 0) ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`} />
                     ))}
                   </div>
-                  <div className="mt-1 text-xs text-[var(--muted-foreground)]">128 student reviews</div>
+                  <div className="mt-1 text-xs text-[var(--muted-foreground)]">{reviewsData?.summary?.totalReviews || 0} student reviews</div>
                 </div>
 
                 <div className="space-y-2">
-                  {RATING_DISTRIBUTION.map((item) => (
-                    <div key={item.stars} className="flex items-center gap-2 text-xs">
-                      <span className="w-3 text-[var(--muted-foreground)]">{item.stars}</span>
-                      <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400 flex-shrink-0" />
-                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[var(--muted)]">
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-[#7ab8ba] to-[#5a9fa1]"
-                          style={{ width: `${item.percent}%` }}
-                        />
+                  {[5, 4, 3, 2, 1].map((stars) => {
+                    const distItem = reviewsData?.summary?.distribution?.find(d => d.stars === stars);
+                    const pct = distItem?.percent || 0;
+                    return (
+                      <div key={stars} className="flex items-center gap-2 text-xs">
+                        <span className="w-3 text-[var(--muted-foreground)]">{stars}</span>
+                        <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400 flex-shrink-0" />
+                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[var(--muted)]">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-[#7ab8ba] to-[#5a9fa1]"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <span className="w-8 text-right text-[var(--muted-foreground)]">{pct}%</span>
                       </div>
-                      <span className="w-8 text-right text-[var(--muted-foreground)]">{item.percent}%</span>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
 
@@ -1058,21 +1040,24 @@ export function TeacherDashboard() {
               </div>
 
               <div className="space-y-3">
-                {STUDENT_REVIEWS.map((review) => (
+                {(!reviewsData?.reviews || reviewsData.reviews.length === 0) && (
+                  <div className="text-[var(--muted-foreground)] text-sm italic p-4 text-center rounded-2xl bg-[rgba(122,184,186,0.05)] border border-[rgba(122,184,186,0.1)]">No reviews received yet.</div>
+                )}
+                {reviewsData?.reviews?.map((r) => (
                   <div
-                    key={review.name}
+                    key={r.bookingId}
                     className="rounded-2xl border border-black/5 bg-white p-4 shadow-[0_2px_14px_rgba(0,0,0,0.04)]"
                     style={{ borderLeft: '3px solid #7ab8ba' }}
                   >
                     <div className="mb-2 flex items-start gap-3">
                       <ImageWithFallback
-                        src={review.avatar}
-                        alt={review.name}
+                        src={r.student?.avatarUrl || 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100'}
+                        alt={r.student?.name || 'Student'}
                         className="h-10 w-10 rounded-xl object-cover"
                       />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
-                          <div className="truncate text-sm font-medium text-[var(--foreground)]">{review.name}</div>
+                          <div className="truncate text-sm font-medium text-[var(--foreground)]">{r.student?.name}</div>
                           <div className="flex items-center gap-1 text-xs text-[var(--muted-foreground)]">
                             <BadgeCheck className="h-3.5 w-3.5 text-emerald-500" />
                             Verified
@@ -1083,15 +1068,15 @@ export function TeacherDashboard() {
                             {Array.from({ length: 5 }).map((_, index) => (
                               <Star
                                 key={index}
-                                className={`h-3.5 w-3.5 ${index < review.rating ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`}
+                                className={`h-3.5 w-3.5 ${index < r.rating ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`}
                               />
                             ))}
                           </div>
-                          <span className="text-xs text-[var(--muted-foreground)]">{review.time}</span>
+                          <span className="text-xs text-[var(--muted-foreground)]">{new Date(r.submittedAt).toLocaleDateString()}</span>
                         </div>
                       </div>
                     </div>
-                    <p className="text-sm leading-relaxed text-[var(--muted-foreground)]">{review.text}</p>
+                    {r.text && <p className="text-sm leading-relaxed text-[var(--muted-foreground)]">{r.text}</p>}
                   </div>
                 ))}
               </div>
