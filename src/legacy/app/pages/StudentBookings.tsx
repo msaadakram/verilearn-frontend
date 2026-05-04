@@ -23,6 +23,7 @@ const STATUS_META: Record<BookingStatus, { label: string; bg: string; color: str
     completed: { label: 'Completed', bg: 'rgba(107,114,128,0.08)', color: '#6b7280' },
     cancelled: { label: 'Cancelled', bg: 'rgba(239,68,68,0.08)', color: '#dc2626' },
     declined: { label: 'Declined', bg: 'rgba(239,68,68,0.08)', color: '#dc2626' },
+    no_show: { label: 'No Show', bg: 'rgba(245,158,11,0.08)', color: '#d97706' },
 };
 
 const FILTER_OPTS: { label: string; value: BookingStatus | 'all' }[] = [
@@ -32,6 +33,7 @@ const FILTER_OPTS: { label: string; value: BookingStatus | 'all' }[] = [
     { label: 'Ongoing', value: 'ongoing' },
     { label: 'Completed', value: 'completed' },
     { label: 'Cancelled', value: 'cancelled' },
+    { label: 'No Show', value: 'no_show' },
 ];
 
 function getParticipantName(p: Booking['teacherId'] | Booking['studentId']) {
@@ -391,10 +393,21 @@ export function StudentBookings() {
                                                         </motion.button>
                                                     )}
 
-                                                    {b.status === 'completed' && (
+                                                    {b.status === 'completed' && b.creditsUsed > 0 && (
                                                         <span className="flex items-center gap-1 text-xs text-[var(--muted-foreground)]">
                                                             <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
                                                             Session completed
+                                                        </span>
+                                                    )}
+                                                    {b.status === 'completed' && b.creditsUsed === 0 && (
+                                                        <span className="flex items-center gap-1 text-xs" style={{ color: '#dc2626' }}>
+                                                            <AlertCircle className="w-3.5 h-3.5" />
+                                                            Incomplete class
+                                                        </span>
+                                                    )}
+                                                    {b.status === 'no_show' && (
+                                                        <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-md" style={{ background: 'rgba(245,158,11,0.08)', color: '#d97706' }}>
+                                                            ⚠ Not Attended
                                                         </span>
                                                     )}
                                                 </div>

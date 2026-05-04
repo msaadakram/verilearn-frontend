@@ -78,6 +78,10 @@ export interface CallContextType {
     sessionResult: SessionCompletedData | null;
     /** Whether we're waiting for the other user to join the session */
     waitingForOther: string | null;
+    /** Maximum session duration in seconds (from booking) */
+    sessionMaxDurationSeconds: number | null;
+    /** Seconds remaining before auto-end (null if not in a timed session) */
+    sessionRemainingSeconds: number | null;
     /** Student calls this to initiate a call to a teacher */
     initiateCall: (teacherId: string, bookingId?: string) => void;
     /** Join an existing scheduled session directly */
@@ -150,13 +154,17 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     const [activeBookingId, setActiveBookingId] = useState<string | null>(null);
     const [sessionResult, setSessionResult] = useState<SessionCompletedData | null>(null);
     const [waitingForOther, setWaitingForOther] = useState<string | null>(null);
+    const [sessionMaxDurationSeconds, setSessionMaxDurationSeconds] = useState<number | null>(null);
+    const [sessionRemainingSeconds, setSessionRemainingSeconds] = useState<number | null>(null);
 
     const socketRef = useRef<Socket | null>(null);
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const sessionCountdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const incomingAutoRejectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const ringingStopTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const ringingAudioRef = useRef<HTMLAudioElement | null>(null);
     const activeBookingIdRef = useRef<string | null>(null);
+    const endCallRef = useRef<() => Promise<void>>(() => Promise.resolve());
 
     // Keep ref in sync with state
     useEffect(() => {
@@ -172,6 +180,30 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         }
         setCallDurationSeconds(0);
     }, []);
+
+    const stopSessionCountdown = useCallback(() => {
+        if (sessionCountdownRef.current) {
+            clearInterval(sessionCountdownRef.current);
+            sessionCountdownRef.current = null;
+        }
+    }, []);
+
+    const startSessionCountdown = useCallback((durationSeconds: number) => {
+        stopSessionCountdown();
+        setSessionMaxDurationSeconds(durationSeconds);
+        setSessionRemainingSeconds(durationSeconds);
+        sessionCountdownRef.current = setInterval(() => {
+            setSessionRemainingSeconds((prev) => {
+                if (prev === null || prev <= 1) {
+                    stopSessionCountdown();
+                    // Auto-end the call when time expires
+                    endCallRef.current();
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+    }, [stopSessionCountdown]);
 
     const startTimer = useCallback(() => {
         stopTimer();
@@ -429,9 +461,13 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
 
             // ── Session lifecycle events ──────────────────────────────────────────
 
-            socket.on('session-started', (data: { bookingId: string; startTime: string }) => {
-                console.log('[Session] Session started:', data.bookingId);
+            socket.on('session-started', (data: { bookingId: string; startTime: string; sessionDuration?: number }) => {
+                console.log('[Session] Session started:', data.bookingId, 'Duration:', data.sessionDuration, 'min');
                 setWaitingForOther(null);
+                // Start countdown timer for the session duration
+                if (data.sessionDuration) {
+                    startSessionCountdown(data.sessionDuration * 60);
+                }
             });
 
             socket.on('session-waiting', (data: { bookingId: string; waitingFor: string }) => {
@@ -618,6 +654,9 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     const endCall = useCallback(async () => {
         const socket = socketRef.current;
         stopRingingSound();
+        stopSessionCountdown();
+        setSessionRemainingSeconds(null);
+        setSessionMaxDurationSeconds(null);
 
         // End the session (credit transfer) if we have an active booking
         if (socket && activeBookingIdRef.current) {
@@ -643,7 +682,12 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         setWaitingForOther(null);
         setActiveBookingId(null);
         setTimeout(() => setCallStatus('idle'), 3000);
-    }, [otherUserId, currentChannel, stopTimer, stopRingingSound]);
+    }, [otherUserId, currentChannel, stopTimer, stopRingingSound, stopSessionCountdown]);
+
+    // Keep ref in sync for auto-end callback
+    useEffect(() => {
+        endCallRef.current = endCall;
+    }, [endCall]);
 
     /** Toggle microphone mute */
     const toggleMute = useCallback(async () => {
@@ -674,6 +718,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         activeBookingId,
         sessionResult,
         waitingForOther,
+        sessionMaxDurationSeconds,
+        sessionRemainingSeconds,
         initiateCall,
         joinSessionCall,
         acceptCall,

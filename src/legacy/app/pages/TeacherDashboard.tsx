@@ -856,6 +856,7 @@ export function TeacherDashboard() {
                 const isPending = req.status === 'pending';
                 const isAccepted = req.status === 'accepted';
                 const isDeclined = req.status === 'declined' || req.status === 'cancelled';
+                const isNoShow = req.status === 'no_show';
                 const isLoading = bookingActionId === req._id;
 
                 return (
@@ -879,7 +880,9 @@ export function TeacherDashboard() {
                             {isAccepted && <span className="px-2 py-1 rounded-full" style={{ background: 'rgba(59,130,246,0.08)', color: '#2563eb' }}>Accepted</span>}
                             {req.status === 'ongoing' && <span className="px-2 py-1 rounded-full" style={{ background: 'rgba(16,185,129,0.08)', color: '#059669' }}>In Session</span>}
                             {isDeclined && <span className="px-2 py-1 rounded-full" style={{ background: 'rgba(239,68,68,0.08)', color: '#dc2626' }}>Declined</span>}
-                            {req.status === 'completed' && <span className="px-2 py-1 rounded-full" style={{ background: 'rgba(107,114,128,0.08)', color: '#6b7280' }}>Completed</span>}
+                            {isNoShow && <span className="px-2 py-1 rounded-full" style={{ background: 'rgba(245,158,11,0.08)', color: '#d97706' }}>No Show</span>}
+                            {req.status === 'completed' && req.creditsUsed > 0 && <span className="px-2 py-1 rounded-full" style={{ background: 'rgba(107,114,128,0.08)', color: '#6b7280' }}>Completed</span>}
+                            {req.status === 'completed' && req.creditsUsed === 0 && <span className="px-2 py-1 rounded-full" style={{ background: 'rgba(239,68,68,0.08)', color: '#dc2626' }}>Incomplete class</span>}
                           </div>
                         </div>
                         {req.message && (
@@ -933,6 +936,9 @@ export function TeacherDashboard() {
                           )}
                           {isDeclined && (
                             <span className="text-xs text-red-500">Declined</span>
+                          )}
+                          {isNoShow && (
+                            <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md" style={{ background: 'rgba(245,158,11,0.08)', color: '#d97706' }}>⚠ Not Attended</span>
                           )}
                           <Link to={`/messages/${studentObj?._id || (typeof req.studentId === 'string' ? req.studentId : '')}`}>
                             <button type="button" className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm border hover:bg-gray-50 transition-colors" style={{ border: '1px solid rgba(0,0,0,0.08)', background: 'white' }}>

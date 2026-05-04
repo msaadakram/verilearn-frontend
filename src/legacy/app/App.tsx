@@ -20,6 +20,8 @@ import { StudentEditProfile } from './pages/StudentEditProfile';
 import { StudentQuizTaker } from './pages/StudentQuizTaker';
 import { BookSession } from './pages/BookSession';
 import { StudentBookings } from './pages/StudentBookings';
+import { SessionReview } from './pages/SessionReview';
+import { SessionEarning } from './pages/SessionEarning';
 import { CnicProvider } from './context/CnicContext';
 import { QuizProvider } from './context/QuizContext';
 import { MessageProvider } from './context/MessageContext';
@@ -107,6 +109,14 @@ export default function App() {
                     )}
                   />
                   <Route
+                    path="/session-review/:bookingId"
+                    element={(
+                      <RequireRole allowedRoles={['student']}>
+                        <SessionReview />
+                      </RequireRole>
+                    )}
+                  />
+                  <Route
                     path="/student-dashboard/edit-profile"
                     element={(
                       <RequireRole allowedRoles={['student']}>
@@ -127,6 +137,14 @@ export default function App() {
                     element={(
                       <RequireRole allowedRoles={['teacher']}>
                         <TeacherDashboard />
+                      </RequireRole>
+                    )}
+                  />
+                  <Route
+                    path="/session-earning/:bookingId"
+                    element={(
+                      <RequireRole allowedRoles={['teacher']}>
+                        <SessionEarning />
                       </RequireRole>
                     )}
                   />

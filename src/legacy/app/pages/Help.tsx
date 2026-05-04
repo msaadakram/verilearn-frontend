@@ -12,50 +12,50 @@ const categories = [
   { id: 'getting-started', icon: BookOpen, label: 'Getting Started', count: 6 },
   { id: 'account', icon: Settings, label: 'Account & Settings', count: 5 },
   { id: 'billing', icon: CreditCard, label: 'Billing & Payments', count: 4 },
-  { id: 'tutors', icon: Users, label: 'Finding Tutors', count: 5 },
+  { id: 'teachers', icon: Users, label: 'Finding Teachers', count: 5 },
   { id: 'sessions', icon: Clock, label: 'Sessions & Scheduling', count: 4 },
   { id: 'safety', icon: Shield, label: 'Trust & Safety', count: 3 },
 ];
 
 const faqs: Record<string, { q: string; a: string }[]> = {
   'getting-started': [
-    { q: 'How do I create an account?', a: 'Click "Get Started" on the homepage and choose whether you\'re a student or tutor. Fill in your details, verify your email, and you\'re ready to go.' },
-    { q: 'Is Verilearn free to use?', a: 'Creating an account is free. Students pay per session based on the tutor\'s rate. Tutors keep 85% of their earnings with no upfront costs.' },
+    { q: 'How do I create an account?', a: 'Click "Get Started" on the homepage and choose whether you\'re a student or teacher. Fill in your details, verify your email, upload your CNIC, and you\'re ready to go.' },
+    { q: 'Is Verilearn free to use?', a: 'Creating an account is free. Students pay per session based on the teacher\'s rate. Teachers keep 85% of their earnings with no upfront costs.' },
     { q: 'What subjects are available?', a: 'We cover 200+ subjects across academics (math, science, languages), test prep (SAT, GRE, GMAT), professional skills, music, and more.' },
-    { q: 'How does tutor matching work?', a: 'Our smart matching algorithm considers your learning goals, preferred schedule, budget, and learning style to recommend the best tutors for you.' },
-    { q: 'Can I try a session before committing?', a: 'Yes! Many tutors offer a discounted or free introductory session so you can see if it\'s a good fit before booking regular sessions.' },
+    { q: 'How does teacher matching work?', a: 'Our smart matching algorithm considers your learning goals, preferred schedule, budget, and learning style to recommend the best teachers for you.' },
+    { q: 'Can I try a session before committing?', a: 'Yes! Many teachers offer a discounted or free introductory session so you can see if it\'s a good fit before booking regular sessions.' },
     { q: 'What devices can I use?', a: 'Verilearn works on any modern web browser. We support desktop, tablet, and mobile devices. A stable internet connection and webcam are recommended for video sessions.' },
   ],
   'account': [
-    { q: 'How do I reset my password?', a: 'Go to the Sign In page and click "Forgot Password." Enter your email and we\'ll send you a 6-digit verification code to reset your password.' },
+    { q: 'How do I reset my password?', a: 'Go to the Sign In page and click "Forgot Password." Enter your email and we\'ll send you a verification link to reset your password.' },
     { q: 'Can I change my email address?', a: 'Yes, go to Settings > Account and update your email. You\'ll need to verify the new email address before the change takes effect.' },
-    { q: 'How do I delete my account?', a: 'Go to Settings > Account > Delete Account. Please note this action is permanent and all your data will be removed after a 30-day grace period.' },
-    { q: 'Can I switch between student and tutor roles?', a: 'Yes! You can add a tutor profile to an existing student account (or vice versa) from your dashboard settings.' },
+    { q: 'How do I delete my account?', a: 'Go to Settings > Account > Delete Account. Please note this action is permanent and all your data will be removed.' },
+    { q: 'Can I switch between student and teacher roles?', a: 'Yes! You can add a teacher profile to an existing student account (or vice versa) from your dashboard settings.' },
     { q: 'How do I update my profile photo?', a: 'Click your avatar in the top right corner, go to Profile, and click the camera icon on your profile photo to upload a new one.' },
   ],
   'billing': [
     { q: 'What payment methods do you accept?', a: 'We accept all major credit and debit cards (Visa, Mastercard, Amex), PayPal, and bank transfers in select countries.' },
-    { q: 'How do refunds work?', a: 'If a session is cancelled by the tutor or doesn\'t meet quality standards, you\'ll receive a full refund within 5-7 business days.' },
-    { q: 'When do tutors get paid?', a: 'Tutors are paid weekly every Friday for sessions completed the previous week. Payments are sent via direct deposit or PayPal.' },
-    { q: 'Are there any hidden fees?', a: 'No hidden fees. The price you see on a tutor\'s profile is the price you pay. There\'s a small platform fee included in the displayed rate.' },
+    { q: 'How do refunds work?', a: 'If a session is cancelled by the teacher or doesn\'t meet quality standards, you\'ll receive a full refund within 5-7 business days.' },
+    { q: 'When do teachers get paid?', a: 'Teachers are directed to an "earning credit" page after completing a session to verify their session earnings. Payments are sent periodically.' },
+    { q: 'Are there any hidden fees?', a: 'No hidden fees. The price you see on a teacher\'s profile is the price you pay. There\'s a small platform fee included in the displayed rate.' },
   ],
-  'tutors': [
-    { q: 'How are tutors verified?', a: 'All tutors go through our rigorous verification process including identity verification, credential checks, subject proficiency tests, and a mock teaching session review.' },
-    { q: 'Can I choose my own tutor?', a: 'Absolutely. You can browse tutors by subject, rating, price, and availability, or use our matching system for personalized recommendations.' },
-    { q: 'What if I\'m not satisfied with my tutor?', a: 'You can switch tutors at any time at no cost. If a session didn\'t meet your expectations, contact support and we\'ll help resolve the issue.' },
-    { q: 'How do I become a tutor?', a: 'Sign up as a tutor, complete your profile with qualifications and experience, pass our verification process, and set your availability and rates.' },
-    { q: 'What qualifications do tutors need?', a: 'Requirements vary by subject but generally include relevant academic credentials, teaching experience, and passing our subject proficiency assessment.' },
+  'teachers': [
+    { q: 'How are teachers verified?', a: 'All teachers go through our rigorous verification process including automated CNIC identity verification via our custom built robust OCR pipeline, credential checks, and subject proficiency tests.' },
+    { q: 'Can I choose my own teacher?', a: 'Absolutely. You can browse teachers by subject, rating, price, and availability, or use our matching system for personalized recommendations.' },
+    { q: 'What if I\'m not satisfied with my teacher?', a: 'You can switch teachers at any time at no cost. Students are directed to a review and rating interface after every session to ensure community quality standards.' },
+    { q: 'How do I become a teacher?', a: 'Sign up as a teacher, complete your profile, upload your CNIC through our automated OCR verification system, set your availability and rates.' },
+    { q: 'What qualifications do teachers need?', a: 'Requirements vary by subject but most importantly include passing our rigorous CNIC OCR verification process to ensure absolute identity trust.' },
   ],
   'sessions': [
-    { q: 'How long are sessions?', a: 'Sessions are typically 30, 45, or 60 minutes. You and your tutor can agree on the best duration for your needs.' },
-    { q: 'Can I reschedule a session?', a: 'Yes, you can reschedule up to 4 hours before the session start time at no charge. Late cancellations may incur a fee.' },
-    { q: 'Are sessions recorded?', a: 'Sessions are not recorded by default for privacy reasons. Both the student and tutor must consent to enable recording.' },
-    { q: 'What tools are available during sessions?', a: 'Our virtual classroom includes video/audio, screen sharing, a collaborative whiteboard, file sharing, and an integrated chat.' },
+    { q: 'How long are sessions?', a: 'Sessions have a strictly enforced 30-minute duration with automated call termination. This ensures punctuality and respects schedules.' },
+    { q: 'What happens after a session?', a: 'Students are directed to a session review and rating interface, while teachers are routed to an earning credit page to verify their funds.' },
+    { q: 'What if a participant doesn\'t show up?', a: 'We have an automated No-Show mechanism that automatically marks sessions as "not attended" if neither participant joins within 30 minutes of the scheduled start time.' },
+    { q: 'What tools are available during sessions?', a: 'Our virtual classroom provides high-quality video and audio calling via direct session connections.' },
   ],
   'safety': [
-    { q: 'How do you protect my personal information?', a: 'We use industry-standard encryption, never share your data with third parties without consent, and comply with GDPR and CCPA regulations.' },
+    { q: 'How do you protect my personal information?', a: 'We use industry-standard encryption, never share your data with third parties without consent, and securely manage your CNIC files during OCR verification.' },
     { q: 'How do I report inappropriate behavior?', a: 'Use the "Report" button available in every session and on every profile page. Our trust & safety team reviews all reports within 24 hours.' },
-    { q: 'Is there parental oversight for minors?', a: 'Yes. Accounts for users under 18 require parental consent, and parents can monitor session history and tutor communications from a linked parent account.' },
+    { q: 'Is there parental oversight for minors?', a: 'Yes. Accounts for users under 18 require parental consent, and parents can monitor session history and teacher communications from a linked parent account.' },
   ],
 };
 
@@ -87,10 +87,10 @@ export function Help() {
 
   const filteredFaqs = searchQuery.trim()
     ? Object.values(faqs).flat().filter(
-        (f) =>
-          f.q.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          f.a.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      (f) =>
+        f.q.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        f.a.toLowerCase().includes(searchQuery.toLowerCase())
+    )
     : activeFaqs;
 
   return (
@@ -130,11 +130,10 @@ export function Help() {
                 <button
                   key={cat.id}
                   onClick={() => setActiveCategory(cat.id)}
-                  className={`flex flex-col items-center gap-2 p-5 rounded-xl border transition-all ${
-                    activeCategory === cat.id
+                  className={`flex flex-col items-center gap-2 p-5 rounded-xl border transition-all ${activeCategory === cat.id
                       ? 'border-[var(--teal-300)] bg-[var(--teal-50)] text-[var(--teal-600)]'
                       : 'border-[var(--border)] hover:border-[var(--teal-200)] text-[var(--muted-foreground)]'
-                  }`}
+                    }`}
                 >
                   <cat.icon className="w-6 h-6" />
                   <span className="text-sm text-center">{cat.label}</span>

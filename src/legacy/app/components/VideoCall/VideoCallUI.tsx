@@ -9,10 +9,10 @@
  *  - Handles rejected/ended states with toast-style message
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { BadgeCheck, Coins, MessageSquareText, Send, Star, TimerReset, X } from 'lucide-react';
 import { useCall } from '../../context/CallContext';
 import { getStoredAuthUser } from '../../services/auth';
-import { submitBookingReview } from '../../services/booking';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -93,6 +93,7 @@ function LocalVideoPlayer() {
 // ─── Main VideoCallUI ─────────────────────────────────────────────────────────
 
 export function VideoCallUI() {
+    const navigate = useNavigate();
     const {
         callStatus,
         remoteUsers,
@@ -107,93 +108,26 @@ export function VideoCallUI() {
         waitingForOther,
         sessionResult,
         clearSessionResult,
+        sessionRemainingSeconds,
+        sessionMaxDurationSeconds,
     } = useCall();
-    const [showSummary, setShowSummary] = useState(false);
-    const [reviewRating, setReviewRating] = useState(5);
-    const [reviewText, setReviewText] = useState('');
-    const [reviewSubmitting, setReviewSubmitting] = useState(false);
-    const [reviewSubmitted, setReviewSubmitted] = useState(false);
-    const [reviewError, setReviewError] = useState<string | null>(null);
-    const [summaryRemainingSeconds, setSummaryRemainingSeconds] = useState(0);
-    const summaryCountdownTimerRef = useRef<number | null>(null);
+
     const currentUser = getStoredAuthUser();
     const isStudent = currentUser?.profession === 'student';
-    const showStudentReview = isStudent;
 
-    const clearSummaryCountdownTimer = useCallback(() => {
-        if (summaryCountdownTimerRef.current) {
-            window.clearInterval(summaryCountdownTimerRef.current);
-            summaryCountdownTimerRef.current = null;
-        }
-    }, []);
-
-    const handleCloseSummary = useCallback(() => {
-        clearSummaryCountdownTimer();
-        setSummaryRemainingSeconds(0);
-        setShowSummary(false);
-        clearSessionResult();
-    }, [clearSessionResult, clearSummaryCountdownTimer]);
-
-    // Show credit summary when session completes
+    // Redirect when session completes
     useEffect(() => {
         if (sessionResult) {
-            setShowSummary(true);
-            setSummaryRemainingSeconds(60);
-            setReviewSubmitted(false);
-            setReviewError(null);
-            setReviewText('');
-            setReviewRating(5);
+            clearSessionResult();
+            if (isStudent) {
+                navigate(`/session-review/${sessionResult.bookingId}`, { state: { sessionResult } });
+            } else {
+                navigate(`/session-earning/${sessionResult.bookingId}`, { state: { sessionResult } });
+            }
         }
-    }, [sessionResult]);
+    }, [sessionResult, navigate, isStudent, clearSessionResult]);
 
-    useEffect(() => {
-        if (!showSummary) {
-            clearSummaryCountdownTimer();
-            setSummaryRemainingSeconds(0);
-            return;
-        }
-
-        clearSummaryCountdownTimer();
-        setSummaryRemainingSeconds(60);
-
-        summaryCountdownTimerRef.current = window.setInterval(() => {
-            setSummaryRemainingSeconds((secondsLeft) => {
-                if (secondsLeft <= 1) {
-                    clearSummaryCountdownTimer();
-                    handleCloseSummary();
-                    return 0;
-                }
-
-                return secondsLeft - 1;
-            });
-        }, 1000);
-
-        return () => {
-            clearSummaryCountdownTimer();
-        };
-    }, [showSummary, clearSummaryCountdownTimer, handleCloseSummary]);
-
-    const handleSubmitReview = async () => {
-        if (!sessionResult?.bookingId || !isStudent || reviewSubmitting) {
-            return;
-        }
-
-        setReviewSubmitting(true);
-        setReviewError(null);
-
-        try {
-            await submitBookingReview(sessionResult.bookingId, {
-                rating: reviewRating,
-                text: reviewText,
-            });
-            setReviewSubmitted(true);
-        } catch (error) {
-            setReviewError(error instanceof Error ? error.message : 'Failed to submit review.');
-        } finally {
-            setReviewSubmitting(false);
-        }
-    };
-    if ((callStatus === 'idle' || callStatus === 'incoming') && !showSummary) return null;
+    if (callStatus === 'idle' || callStatus === 'incoming') return null;
 
     // If minimized, show small floating window
     if (isMinimized) {
@@ -274,6 +208,24 @@ export function VideoCallUI() {
                     {isConnected && (
                         <span style={styles.timer}>{formatDuration(callDurationSeconds)}</span>
                     )}
+
+                    {/* Session remaining time countdown */}
+                    {isConnected && sessionRemainingSeconds !== null && sessionRemainingSeconds !== undefined && (
+                        <span style={{
+                            ...styles.timer,
+                            background: sessionRemainingSeconds <= 60 ? 'rgba(239,68,68,0.3)'
+                                : sessionRemainingSeconds <= 300 ? 'rgba(245,158,11,0.3)'
+                                    : 'rgba(34,197,94,0.2)',
+                            color: sessionRemainingSeconds <= 60 ? '#fca5a5'
+                                : sessionRemainingSeconds <= 300 ? '#fde68a'
+                                    : '#86efac',
+                            border: `1px solid ${sessionRemainingSeconds <= 60 ? 'rgba(239,68,68,0.4)'
+                                : sessionRemainingSeconds <= 300 ? 'rgba(245,158,11,0.3)'
+                                    : 'rgba(34,197,94,0.25)'}`,
+                        }}>
+                            ⏱ {formatDuration(sessionRemainingSeconds)} left
+                        </span>
+                    )}
                 </div>
 
                 {/* ── Control bar (bottom) ──────────────────────────────────────── */}
@@ -336,241 +288,34 @@ export function VideoCallUI() {
                     </button>
                 </div>
 
-                {/* ── Ended / rejected banner ────────────────────────────────────── */}
-                {callStatus === 'ended' && !showSummary && (
-                    <div style={styles.endedBanner}>Call ended</div>
+                {/* ── Time expiring warning banner ──────────────────────────────── */}
+                {isConnected && sessionRemainingSeconds !== null && sessionRemainingSeconds <= 60 && sessionRemainingSeconds > 0 && (
+                    <div style={{
+                        position: 'absolute',
+                        top: 70,
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        background: 'rgba(239,68,68,0.85)',
+                        color: 'white',
+                        padding: '8px 20px',
+                        borderRadius: 12,
+                        fontSize: 14,
+                        fontWeight: 600,
+                        fontFamily: 'Inter, sans-serif',
+                        backdropFilter: 'blur(8px)',
+                        zIndex: 10003,
+                        animation: 'fadeIn 0.3s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                    }}>
+                        ⚠️ Session ending in {sessionRemainingSeconds}s
+                    </div>
                 )}
 
-                {/* ── Session credit summary overlay ─────────────────────────────── */}
-                {showSummary && sessionResult && (
-                    <div style={{
-                        position: 'absolute', inset: 0,
-                        background: 'linear-gradient(135deg, rgba(8,15,30,0.92), rgba(10,14,25,0.96))', backdropFilter: 'blur(16px)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        zIndex: 10003, animation: 'fadeIn 0.3s ease',
-                        padding: 20,
-                    }}>
-                        <div style={{
-                            width: '100%', maxWidth: 760,
-                            borderRadius: 28,
-                            overflow: 'hidden',
-                            background: 'rgba(255,255,255,0.06)',
-                            border: '1px solid rgba(255,255,255,0.12)',
-                            boxShadow: '0 30px 80px rgba(0,0,0,0.45)',
-                            display: 'grid',
-                            gridTemplateColumns: showStudentReview ? '1.1fr 0.95fr' : '1fr',
-                        }}>
-                            <div style={{
-                                padding: 28,
-                                background: 'linear-gradient(180deg, rgba(122,184,186,0.18), rgba(255,255,255,0.02))',
-                                borderRight: showStudentReview ? '1px solid rgba(255,255,255,0.10)' : 'none',
-                            }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                                    <div style={{
-                                        width: 42, height: 42, borderRadius: 14,
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        background: 'rgba(34,197,94,0.16)', color: '#86efac',
-                                    }}>
-                                        <BadgeCheck size={22} />
-                                    </div>
-                                    <div>
-                                        <h3 style={{ color: 'white', fontSize: 24, fontWeight: 700, margin: 0, fontFamily: 'Inter, sans-serif' }}>
-                                            Session complete
-                                        </h3>
-                                        <p style={{ color: 'rgba(255,255,255,0.62)', fontSize: 13, margin: '2px 0 0', fontFamily: 'Inter, sans-serif' }}>
-                                            Credits updated automatically after the call ended.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-                                    gap: 12,
-                                    marginBottom: 18,
-                                }}>
-                                    <div style={{ ...summaryCardStyle, background: 'linear-gradient(180deg, rgba(245,158,11,0.16), rgba(245,158,11,0.08))' }}>
-                                        <div style={summaryLabelStyle}>Credits used</div>
-                                        <div style={{ ...summaryValueStyle, color: '#fbbf24', display: 'flex', alignItems: 'center', gap: 8 }}>
-                                            <Coins size={20} />
-                                            {sessionResult.creditsUsed}
-                                        </div>
-                                    </div>
-                                    <div style={{ ...summaryCardStyle, background: 'linear-gradient(180deg, rgba(16,185,129,0.16), rgba(16,185,129,0.08))' }}>
-                                        <div style={summaryLabelStyle}>Credits earned</div>
-                                        <div style={{ ...summaryValueStyle, color: '#34d399', display: 'flex', alignItems: 'center', gap: 8 }}>
-                                            <BadgeCheck size={20} />
-                                            {sessionResult.teacherCreditsTotal}
-                                        </div>
-                                    </div>
-                                    <div style={{ ...summaryCardStyle, background: 'linear-gradient(180deg, rgba(122,184,186,0.16), rgba(122,184,186,0.08))' }}>
-                                        <div style={summaryLabelStyle}>Duration</div>
-                                        <div style={{ ...summaryValueStyle, color: '#7ab8ba', display: 'flex', alignItems: 'center', gap: 8 }}>
-                                            <TimerReset size={20} />
-                                            {sessionResult.actualDurationMinutes}m
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div style={{
-                                    borderRadius: 18,
-                                    background: 'rgba(255,255,255,0.05)',
-                                    border: '1px solid rgba(255,255,255,0.08)',
-                                    padding: 16,
-                                }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                                        <TimerReset size={18} color="#cbd5e1" />
-                                        <div style={{ color: 'white', fontSize: 14, fontWeight: 600 }}>What happened in this call</div>
-                                    </div>
-                                    <div style={{ color: 'rgba(255,255,255,0.68)', fontSize: 13, lineHeight: 1.6 }}>
-                                        <div>• Credits are charged after the session completes.</div>
-                                        <div>• Teacher earnings are recorded in the summary above.</div>
-                                        <div>• You can leave a rating and review on the right.</div>
-                                    </div>
-                                </div>
-
-                                {reviewError && (
-                                    <div style={errorBannerStyle}>{reviewError}</div>
-                                )}
-                            </div>
-
-                            {showStudentReview && (
-                            <div style={{ padding: 28, background: 'rgba(255,255,255,0.03)' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 18 }}>
-                                    <div>
-                                        <div style={{ color: 'white', fontSize: 20, fontWeight: 700, marginBottom: 4, fontFamily: 'Inter, sans-serif' }}>
-                                            Rate this session
-                                        </div>
-                                        <div style={{ color: 'rgba(255,255,255,0.58)', fontSize: 13, fontFamily: 'Inter, sans-serif' }}>
-                                            Share your experience so others can discover great teaching.
-                                        </div>
-                                    </div>
-                                    <div style={{
-                                        padding: '8px 10px',
-                                        borderRadius: 999,
-                                        background: 'rgba(255,255,255,0.05)',
-                                        color: 'rgba(255,255,255,0.75)',
-                                        fontSize: 12,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 6,
-                                    }}>
-                                        <MessageSquareText size={14} />
-                                        Optional review
-                                    </div>
-                                </div>
-
-                                <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                        <button
-                                            key={star}
-                                            type="button"
-                                            onClick={() => setReviewRating(star)}
-                                            disabled={reviewSubmitted || reviewSubmitting || !isStudent}
-                                            aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
-                                            style={{
-                                                background: 'rgba(255,255,255,0.05)',
-                                                border: '1px solid rgba(255,255,255,0.08)',
-                                                width: 46,
-                                                height: 46,
-                                                borderRadius: 14,
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                cursor: reviewSubmitted || reviewSubmitting || !isStudent ? 'default' : 'pointer',
-                                                transition: 'transform 0.15s ease, background 0.2s ease, border-color 0.2s ease',
-                                                color: star <= reviewRating ? '#fbbf24' : 'rgba(255,255,255,0.28)',
-                                            }}
-                                        >
-                                            <Star size={22} className={getStarFillClass(star, reviewRating)} />
-                                        </button>
-                                    ))}
-                                </div>
-
-                                <textarea
-                                    value={reviewText}
-                                    onChange={(event) => setReviewText(event.target.value)}
-                                    maxLength={1000}
-                                    disabled={reviewSubmitted || reviewSubmitting || !isStudent}
-                                    placeholder={isStudent ? 'Write a short review about the tutor and the session…' : 'Only students can submit reviews.'}
-                                    style={{
-                                        width: '100%',
-                                        minHeight: 130,
-                                        resize: 'vertical',
-                                        borderRadius: 18,
-                                        border: '1px solid rgba(255,255,255,0.10)',
-                                        background: 'rgba(0,0,0,0.24)',
-                                        color: 'white',
-                                        padding: '14px 15px',
-                                        fontSize: 13,
-                                        fontFamily: 'Inter, sans-serif',
-                                        outline: 'none',
-                                        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
-                                    }}
-                                />
-
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginTop: 14 }}>
-                                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, fontFamily: 'Inter, sans-serif' }}>
-                                        {reviewSubmitted
-                                            ? 'Review submitted successfully.'
-                                            : isStudent
-                                                ? 'Tap a star, write feedback, then submit.'
-                                                : 'Review can be submitted by the student after the call.'}
-                                    </div>
-
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                                        {showStudentReview && !reviewSubmitted && (
-                                            <button
-                                                type="button"
-                                                onClick={() => { void handleSubmitReview(); }}
-                                                disabled={reviewSubmitting || !isStudent}
-                                                style={{
-                                                    background: reviewSubmitting || !isStudent
-                                                        ? 'rgba(255,255,255,0.10)'
-                                                        : 'linear-gradient(135deg,#7ab8ba,#5a9fa1)',
-                                                    color: 'white',
-                                                    border: '1px solid rgba(255,255,255,0.10)',
-                                                    borderRadius: 14,
-                                                    padding: '11px 16px',
-                                                    fontSize: 13,
-                                                    fontWeight: 700,
-                                                    cursor: reviewSubmitting || !isStudent ? 'not-allowed' : 'pointer',
-                                                    opacity: reviewSubmitting || !isStudent ? 0.75 : 1,
-                                                    display: 'inline-flex',
-                                                    alignItems: 'center',
-                                                    gap: 8,
-                                                }}
-                                            >
-                                                <Send size={15} />
-                                                {reviewSubmitting ? 'Submitting…' : 'Submit review'}
-                                            </button>
-                                        )}
-
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                            <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 12, fontFamily: 'Inter, sans-serif' }}>
-                                                Auto-closes in {formatDuration(summaryRemainingSeconds)}
-                                            </div>
-                                            <button
-                                                onClick={handleCloseSummary}
-                                                style={{
-                                                    background: 'rgba(255,255,255,0.08)',
-                                                    color: 'white', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 14,
-                                                    padding: '10px 16px', fontSize: 13, fontWeight: 600,
-                                                    cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-                                                }}
-                                            >
-                                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                                                    <X size={14} />
-                                                    {reviewSubmitted ? 'Close' : 'Skip for now'}
-                                                </span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            )}
-                        </div>
-                    </div>
+                {/* ── Ended / rejected banner ────────────────────────────────────── */}
+                {callStatus === 'ended' && (
+                    <div style={styles.endedBanner}>Call ended</div>
                 )}
             </div>
         </>

@@ -30,7 +30,7 @@ async function authFetch<T>(endpoint: string, init: RequestInit = {}): Promise<T
 
 /* ── Types ─────────────────────────────────────────────────────────── */
 
-export type BookingStatus = 'pending' | 'accepted' | 'ongoing' | 'completed' | 'cancelled' | 'declined';
+export type BookingStatus = 'pending' | 'accepted' | 'ongoing' | 'completed' | 'cancelled' | 'declined' | 'no_show';
 export type BookingType = 'slot' | 'request';
 
 export interface BookingParticipant {

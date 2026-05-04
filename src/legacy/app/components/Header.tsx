@@ -52,7 +52,6 @@ export function Header() {
         { icon: <User className="w-4 h-4" />, label: 'My Profile', to: '/teacher-dashboard/edit-profile' },
         { icon: <LayoutDashboard className="w-4 h-4" />, label: 'Dashboard', to: '/teacher-dashboard' },
         { icon: <MessageCircle className="w-4 h-4" />, label: 'Messages', to: '/messages', badge: messageBadge },
-        { icon: <Settings className="w-4 h-4" />, label: 'Settings', to: '/teacher-dashboard/edit-profile' },
         { icon: <HelpCircle className="w-4 h-4" />, label: 'Help & Support', to: '/help' },
       ]
       : [
@@ -60,7 +59,6 @@ export function Header() {
         { icon: <User className="w-4 h-4" />, label: 'My Profile', to: '/student-dashboard/edit-profile' },
         { icon: <LayoutDashboard className="w-4 h-4" />, label: 'Dashboard', to: '/student-dashboard' },
         { icon: <MessageCircle className="w-4 h-4" />, label: 'Messages', to: '/messages', badge: messageBadge },
-        { icon: <Settings className="w-4 h-4" />, label: 'Settings', to: '/student-dashboard/edit-profile' },
         { icon: <HelpCircle className="w-4 h-4" />, label: 'Help & Support', to: '/help' },
       ];
 
